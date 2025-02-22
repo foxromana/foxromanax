@@ -5,6 +5,10 @@
               companyName="Fox Romana" companyCopyright="Fox Romana" companyEmail="fox.romana.music@gmail.com"
               cppLanguageStandard="20">
   <MAINGROUP id="mI4mOu" name="Fox Romana X">
+    <GROUP id="{607B74D9-5641-6199-DBFE-3EE91DA97A24}" name="Parameters">
+      <FILE id="XKqDnf" name="CParameters.cpp" compile="1" resource="0" file="Source/CParameters.cpp"/>
+      <FILE id="t3vGos" name="CParameters.h" compile="0" resource="0" file="Source/CParameters.h"/>
+    </GROUP>
     <GROUP id="{8FDD2ED9-9451-583F-1B31-E924E6B28423}" name="Source">
       <FILE id="FMesus" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

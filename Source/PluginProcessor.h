@@ -9,7 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "CParameters.h"
 //==============================================================================
 /**
 */
@@ -54,6 +54,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    
+    //parameter storage that JUCE is recommending!
+    //parameter is so important, need to create a class! 
+    juce::AudioProcessorValueTreeState mApvts;
+    
+    //Fox Romana Parameter layout
+    CParameters mParameters;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)
 };

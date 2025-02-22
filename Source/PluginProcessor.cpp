@@ -11,16 +11,12 @@
 
 //==============================================================================
 FoxRomanaXAudioProcessor::FoxRomanaXAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
-#endif
+     : AudioProcessor (BusesProperties().withInput("Input", juce::AudioChannelSet::stereo(), true)
+                                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+//member variables objects initialization - calling consturctor of member object
+mApvts(*this, nullptr, "CParameters", CParameters::initParameterLayout()),
+// parameters
+mParameters(mApvts)
 {
     DBG("HJY: contructor");
 }
@@ -110,26 +106,13 @@ void FoxRomanaXAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool FoxRomanaXAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
-    return true;
-  #endif
+    //is this plugin mono or stereo? fix it to stereo.
+    //when DAW is open, DAW checks all the plugins and companies, and which channel system is supported**!!
+    //this functions returns the plugin's info : "this plugin supports stereo and mono, or stereo only etc...
+    //so All of the plugin calls this function!!! (that's why it's slow
+    
+    return (layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo() &&
+            layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo());
 }
 #endif
 
@@ -173,11 +156,21 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     //output buffer
     float* bufferOutputL = buffer.getWritePointer(0);
     float* bufferOutputR = buffer.getWritePointer(1);
-    
+        
     for(int i= 0; i<buffer.getNumSamples(); i++)
     {
-        bufferOutputL[i] = bufferInputL[i] * 0.5f; //-6dB
-        bufferOutputR[i] = bufferInputR[i] * 0.5f; //-6dB
+        //Volume 50% down! -6 dB
+        //bufferOutputL[i] = bufferInputL[i] * 0.5f; //-6dB
+        //bufferOutputR[i] = bufferInputR[i] * 0.5f; //-6dB
+        
+        //left only.
+        //bufferOutputL[i] = bufferInputL[i] + bufferInputR[i];
+        //bufferOutputR[i] = 0.0f;
+        
+        //parameter
+        bufferOutputL[i] = bufferInputL[i] * mParameters.getValueGain(); //-6dB
+        bufferOutputR[i] = bufferInputR[i] * mParameters.getValueGain(); //-6dB
+        
     }
 }
 
