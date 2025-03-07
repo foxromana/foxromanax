@@ -5,9 +5,18 @@
               companyName="Fox Romana" companyCopyright="Fox Romana" companyEmail="fox.romana.music@gmail.com"
               cppLanguageStandard="20">
   <MAINGROUP id="mI4mOu" name="Fox Romana X">
+    <GROUP id="{EC38C25D-E92A-7F37-1E2F-8D6F499A6B93}" name="Utils">
+      <FILE id="yYHloH" name="FoxSmoother.cpp" compile="1" resource="0" file="Source/FoxSmoother.cpp"/>
+      <FILE id="WIa5RS" name="FoxSmoother.h" compile="0" resource="0" file="Source/FoxSmoother.h"/>
+    </GROUP>
+    <GROUP id="{10E26411-164A-97F5-0474-E188DE90F45F}" name="DSP">
+      <FILE id="N3rfGZ" name="FoxDelay.cpp" compile="1" resource="0" file="Source/FoxDelay.cpp"/>
+      <FILE id="rwzg7J" name="FoxDelay.h" compile="0" resource="0" file="Source/FoxDelay.h"/>
+    </GROUP>
     <GROUP id="{607B74D9-5641-6199-DBFE-3EE91DA97A24}" name="Parameters">
-      <FILE id="XKqDnf" name="CParameters.cpp" compile="1" resource="0" file="Source/CParameters.cpp"/>
-      <FILE id="t3vGos" name="CParameters.h" compile="0" resource="0" file="Source/CParameters.h"/>
+      <FILE id="XKqDnf" name="FoxParameters.cpp" compile="1" resource="0"
+            file="Source/FoxParameters.cpp"/>
+      <FILE id="t3vGos" name="FoxParameters.h" compile="0" resource="0" file="Source/FoxParameters.h"/>
     </GROUP>
     <GROUP id="{8FDD2ED9-9451-583F-1B31-E924E6B28423}" name="Source">
       <FILE id="FMesus" name="PluginProcessor.cpp" compile="1" resource="0"

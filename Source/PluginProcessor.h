@@ -9,7 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "CParameters.h"
+#include "FoxParameters.h"
+#include "FoxDelay.h"
 //==============================================================================
 /**
 */
@@ -52,6 +53,9 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    //called when DAW stops and replay
+    void reset() override; 
 
 private:
     
@@ -60,7 +64,10 @@ private:
     juce::AudioProcessorValueTreeState mApvts;
     
     //Fox Romana Parameter layout
-    CParameters mParameters;
+    FoxParameters mParameters;
+    
+    FoxDelay mDelayL, mDelayR;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)
 };

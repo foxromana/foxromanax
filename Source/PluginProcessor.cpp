@@ -14,7 +14,7 @@ FoxRomanaXAudioProcessor::FoxRomanaXAudioProcessor()
      : AudioProcessor (BusesProperties().withInput("Input", juce::AudioChannelSet::stereo(), true)
                                         .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
 //member variables objects initialization - calling consturctor of member object
-mApvts(*this, nullptr, "CParameters", CParameters::initParameterLayout()),
+mApvts(*this, nullptr, "FoxParameters", FoxParameters::initParameterLayout()),
 // parameters
 mParameters(mApvts)
 {
@@ -89,11 +89,16 @@ void FoxRomanaXAudioProcessor::changeProgramName (int index, const juce::String&
 }
 
 //==============================================================================
+
+//when plugin is from the track of the DAW, this function is up only once!
 void FoxRomanaXAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    //pass sample rate to mParameters
     // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    DBG("HJY: preparetoplay"<< sampleRate <<", " <<samplesPerBlock<< ".");
+    mParameters.prepare(sampleRate);
+    
+    mDelayL.prepare(sampleRate);
+    mDelayR.prepare(sampleRate);
 }
 
 void FoxRomanaXAudioProcessor::releaseResources()
@@ -121,6 +126,7 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     //HJY: actual work here!!
     
     juce::ScopedNoDenormals noDenormals;
+    
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -133,21 +139,7 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    /*for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }*/
-    
     //stereo : left 0, right 1
-    
     //input buffer. const
     //range: -1.0 ~ 1.0
     const float* bufferInputL = buffer.getReadPointer(0);
@@ -156,20 +148,42 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     //output buffer
     float* bufferOutputL = buffer.getWritePointer(0);
     float* bufferOutputR = buffer.getWritePointer(1);
-        
+       
+    //class 3
+    //Normalize db-> ratio update first
+    //chage the final target value of for smoothing
+    mParameters.update();
+    
     for(int i= 0; i<buffer.getNumSamples(); i++)
     {
+        //class 1
         //Volume 50% down! -6 dB
         //bufferOutputL[i] = bufferInputL[i] * 0.5f; //-6dB
         //bufferOutputR[i] = bufferInputR[i] * 0.5f; //-6dB
+                
+        //class 3
+        //move one step. ( number of sample rates = step!)
+        mParameters.smoothen();
+                
+        //only Gain up
+        //bufferOutputL[i] = bufferInputL[i] * mParameters.getValueGain(); // get gain in ratio
+        //bufferOutputR[i] = bufferInputR[i] * mParameters.getValueGain(); //-6dB
+
         
-        //left only.
-        //bufferOutputL[i] = bufferInputL[i] + bufferInputR[i];
-        //bufferOutputR[i] = 0.0f;
+
+        //class 4
+        //Delay first
+        const float inputL = bufferInputL[i];
+        const float inputR = bufferInputR[i];
         
-        //parameter
-        bufferOutputL[i] = bufferInputL[i] * mParameters.getValueGain(); //-6dB
-        bufferOutputR[i] = bufferInputR[i] * mParameters.getValueGain(); //-6dB
+        const float outDelayL = mDelayL.process(inputL, mParameters.getValueTime(0));
+        const float outDelayR = mDelayR.process(inputR, mParameters.getValueTime(1));
+ 
+        //after delay, Gain up
+        bufferOutputL[i] = outDelayL * mParameters.getValueGain(); // get gain in ratio
+        bufferOutputR[i] = outDelayR * mParameters.getValueGain(); //-6dB
+
+        
         
     }
 }
@@ -204,4 +218,13 @@ void FoxRomanaXAudioProcessor::setStateInformation (const void* data, int sizeIn
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new FoxRomanaXAudioProcessor();
+}
+
+void FoxRomanaXAudioProcessor::reset()
+{
+    mParameters.reset();
+    
+    //Replay시 delay 버퍼를 초기화 해야함!
+    mDelayL.reset();
+    mDelayR.reset();
 }
