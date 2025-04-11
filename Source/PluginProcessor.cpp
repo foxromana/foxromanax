@@ -97,8 +97,12 @@ void FoxRomanaXAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     // Use this method as the place to do any pre-playback
     mParameters.prepare(sampleRate);
     
-    mDelayL.prepare(sampleRate);
-    mDelayR.prepare(sampleRate);
+    //Until Lesson 5-6
+    //mDelayL.prepare(sampleRate);
+    //mDelayR.prepare(sampleRate);
+    
+    //Lesson 6
+    mModuleDelay.prepare(sampleRate);
 }
 
 void FoxRomanaXAudioProcessor::releaseResources()
@@ -169,22 +173,60 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //bufferOutputL[i] = bufferInputL[i] * mParameters.getValueGain(); // get gain in ratio
         //bufferOutputR[i] = bufferInputR[i] * mParameters.getValueGain(); //-6dB
 
-        
 
         //class 4
         //Delay first
-        const float inputL = bufferInputL[i];
-        const float inputR = bufferInputR[i];
-        
-        const float outDelayL = mDelayL.process(inputL, mParameters.getValueTime(0));
-        const float outDelayR = mDelayR.process(inputR, mParameters.getValueTime(1));
- 
+        //const float inputL = bufferInputL[i];
+        //const float inputR = bufferInputR[i];
+        //const float outDelayL = mDelayL.process(inputL, mParameters.getValueTime(0));
+        //const float outDelayR = mDelayR.process(inputR, mParameters.getValueTime(1));
         //after delay, Gain up
-        bufferOutputL[i] = outDelayL * mParameters.getValueGain(); // get gain in ratio
-        bufferOutputR[i] = outDelayR * mParameters.getValueGain(); //-6dB
+        //bufferOutputL[i] = outDelayL * mParameters.getValueGain(); // get gain in ratio
+        //bufferOutputR[i] = outDelayR * mParameters.getValueGain(); //
+
+        //class 6
+        //dry = input
+        const float dryL = bufferInputL[i];
+        const float dryR = bufferInputR[i];
+        //wet = output
+        //const float wetL = mDelayL.process(dryL, mParameters.getValueTime(0));
+        //const float wetR = mDelayR.process(dryR, mParameters.getValueTime(1));
+        
+        //class 6 - L/R same exponential 신호만 확인할 때 사용 (음 x)
+        //bufferOutputL[i] = mParameters.getValueTest();
+        //bufferOutputR[i] = mParameters.getValueTest();
 
         
+        //class 6 - module output. mix only
+        float wetL = 0.0f;
+        float wetR = 0.0f;
+        mModuleDelay.process(dryL, dryR,
+                             wetL, wetR,
+                             mParameters.getValueTime(0),
+                             mParameters.getValueTime(1));
+  
+        //class 6
+        //const float mixL = dryL + (wetL * mParameters.getValueMix());
+        //const float mixR = dryR + (wetR * mParameters.getValueMix());
+
         
+        //class 7 - Output module mix * gain
+        const float outL = mModuleOutput.process(dryL, wetL,
+                                           mParameters.getValueMix(),
+                                           mParameters.getValueGain());
+
+        const float outR = mModuleOutput.process(dryR, wetR,
+                                           mParameters.getValueMix(),
+                                           mParameters.getValueGain());
+
+            
+        //class 6
+        //bufferOutputL[i] = mixL * mParameters.getValueGain();
+        //bufferOutputR[i] = mixR * mParameters.getValueGain();
+        
+        //class 7
+        bufferOutputL[i] = outL;
+        bufferOutputR[i] = outR;
     }
 }
 
@@ -224,7 +266,16 @@ void FoxRomanaXAudioProcessor::reset()
 {
     mParameters.reset();
     
+    //till lesson 5-6
     //Replay시 delay 버퍼를 초기화 해야함!
-    mDelayL.reset();
-    mDelayR.reset();
+    //mDelayL.reset();
+    //mDelayR.reset();
+    
+    //lesson 6
+    mModuleDelay.reset();
+}
+
+juce::AudioProcessorValueTreeState& FoxRomanaXAudioProcessor::getApvts() noexcept
+{
+    return mApvts; 
 }

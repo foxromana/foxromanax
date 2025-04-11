@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "FoxRotaryKnob.h"
 
 //==============================================================================
 /**
@@ -29,5 +30,12 @@ private:
     // access the processor object that created it.
     FoxRomanaXAudioProcessor& audioProcessor;
 
+    //Class 7 - slider 기초
+    //juce::Slider mSliderTest;
+    //juce::AudioProcessorValueTreeState::SliderAttachment mAttachmentSliderTest;
+    
+    juce::Label mLabelGain;
+    FoxRotaryKnob mKnobGain;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessorEditor)
 };

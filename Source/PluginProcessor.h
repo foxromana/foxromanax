@@ -10,7 +10,8 @@
 
 #include <JuceHeader.h>
 #include "FoxParameters.h"
-#include "FoxDelay.h"
+#include "ModuleDelay.h"
+#include "ModuleOutput.h"
 //==============================================================================
 /**
 */
@@ -55,18 +56,27 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     //called when DAW stops and replay
-    void reset() override; 
+    void reset() override;
+    
+    juce::AudioProcessorValueTreeState& getApvts() noexcept;
 
 private:
     
     //parameter storage that JUCE is recommending!
-    //parameter is so important, need to create a class! 
+    //parameter is so important, need to create a class!
     juce::AudioProcessorValueTreeState mApvts;
     
     //Fox Romana Parameter layout
     FoxParameters mParameters;
     
-    FoxDelay mDelayL, mDelayR;
+    //Until Lesson 5-6
+    //FoxDelay mDelayL, mDelayR;
+    
+    //Lesson 6
+    ModuleDelay mModuleDelay;
+    
+    //Lesson 7
+    ModuleOutput mModuleOutput; 
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)

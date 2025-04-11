@@ -5,7 +5,20 @@
               companyName="Fox Romana" companyCopyright="Fox Romana" companyEmail="fox.romana.music@gmail.com"
               cppLanguageStandard="20">
   <MAINGROUP id="mI4mOu" name="Fox Romana X">
+    <GROUP id="{9FCC3E9F-9A1D-A9D2-4D5E-D9433C60BC14}" name="Customs">
+      <FILE id="P3Cno7" name="FoxRotaryKnob.cpp" compile="1" resource="0"
+            file="Source/FoxRotaryKnob.cpp"/>
+      <FILE id="I1gR43" name="FoxRotaryKnob.h" compile="0" resource="0" file="Source/FoxRotaryKnob.h"/>
+    </GROUP>
+    <GROUP id="{1872ECD3-6B78-92D7-554C-CE993ABAD12E}" name="Modules">
+      <FILE id="N0mrX5" name="ModuleDelay.cpp" compile="1" resource="0" file="Source/ModuleDelay.cpp"/>
+      <FILE id="s6iFIl" name="ModuleDelay.h" compile="0" resource="0" file="Source/ModuleDelay.h"/>
+      <FILE id="tOMAEE" name="ModuleOutput.cpp" compile="1" resource="0"
+            file="Source/ModuleOutput.cpp"/>
+      <FILE id="bQrPkj" name="ModuleOutput.h" compile="0" resource="0" file="Source/ModuleOutput.h"/>
+    </GROUP>
     <GROUP id="{EC38C25D-E92A-7F37-1E2F-8D6F499A6B93}" name="Utils">
+      <FILE id="aqz69P" name="FoxSize.h" compile="0" resource="0" file="Source/FoxSize.h"/>
       <FILE id="yYHloH" name="FoxSmoother.cpp" compile="1" resource="0" file="Source/FoxSmoother.cpp"/>
       <FILE id="WIa5RS" name="FoxSmoother.h" compile="0" resource="0" file="Source/FoxSmoother.h"/>
     </GROUP>

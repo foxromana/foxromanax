@@ -32,6 +32,13 @@ static juce::String stringFromMilliSeconds(float inValue, int)
     }
 }
 
+//Lesson 6 - mix : set unit.
+static juce::String stringFromPercent(float inValue, int)
+{
+    return juce::String((int)inValue) + " %"; // 10 -> 10%
+}
+
+
 //template function for make dynamic casting easier!!
 template<typename T>
 static void castParameter(juce::AudioProcessorValueTreeState& inApvts,
@@ -55,11 +62,14 @@ FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts) : mApv
     //mParamTest =  dynamic_cast<juce::AudioParameterFloat*>(mApvts.getParameter(FoxParamIDs::Test.getParamID()));
     castParameter(mApvts, FoxParamIDs::Test, mParamTest);
     
-    //Dalay
+    //Lesson 4~5 Dalay
     for(int i = 0 ; i <2 ;i++)
     {
         castParameter(mApvts,FoxParamIDs::Delay::Time[i], mParamTime[i]);
     }
+    
+    //Lesson 6 Mix
+    castParameter(mApvts, FoxParamIDs::Output::Mix, mParamMix);
     
 }
 
@@ -88,7 +98,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                            juce::NormalisableRange<float>(0.0f, 1.0f, 0.1f),// range: min dB~ max dB move unit 0.1
                                                            0.0f));
     
-    //Delay
+    //Lesson 4-5 - Delay
     for(int i=0 ; i<2 ; ++i)
     {
         const juce::String nameTime = (i == 0) ? "Delay Time L" : "Delay Time R";
@@ -99,6 +109,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                                juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromMilliSeconds)
                                                                ));
     }
+    
+    //Lesson 6 - mix
+    //need to be percent(%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(FoxParamIDs::Output::Mix, //type of parameter
+                                                           "Mix", // parameter name
+                                                           juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
+                                                           50.0f,
+                                                           juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromPercent)));
+    
     
     // juce::audioparameter ( RangedAudioParamter is parent. it's always range from 0 to 1 )
     // - int : ..?
@@ -122,6 +141,12 @@ void FoxParameters::prepare(const double inSampleRate) noexcept
     //test
     mValueTest.reset(mSampleRate, timeLinearSmoothing); // mSampleRate * 0.05 = 44100 * 0.05 = 220 steps needed!
     
+    //Lesson 6 Delay with exponential smoothing
+    mValueTime[0].reset(mSampleRate, timeLinearSmoothing); //Left
+    mValueTime[1].reset(mSampleRate, timeLinearSmoothing); //Right
+    
+    //Lesson 6 Mix
+    mValueMix.reset(mSampleRate, timeLinearSmoothing);
     
     //prepare() is called in the begining so needed to init target and current value
     update(); // target value initialized
@@ -130,8 +155,18 @@ void FoxParameters::prepare(const double inSampleRate) noexcept
 
 void FoxParameters::smoothen() noexcept
 {
-    mValueTest.getNextValue();
+    //Lesson 5 - linear smoothing
+    //mValueTest.getNextValue();
+    
+    //Lesson 6 - exponential smoothing
+    mValueTest.smoothen();
     mValueGain.getNextValue();
+    //delay
+    mValueTime[0].smoothen(); //Left
+    mValueTime[1].smoothen(); //Right
+    //Mix
+    mValueMix.getNextValue();
+    
 }
 
 //set target
@@ -149,33 +184,61 @@ void FoxParameters::update() noexcept
     const float gain = juce::Decibels::decibelsToGain(mParamGain->get());
     
     mValueGain.setTargetValue(gain);
-    mValueTest.setTargetValue(mParamTest->get());
+    
+    //Lesson 5
+    //mValueTest.setTargetValue(mParamTest->get());
+    
+    //Lesson 6 - exponential smoothing
+    mValueTest.setTarget(mParamTest->get());
     
     //Delay: ms -> numSamples
     for(int i=0; i<2 ;++i)
     {
         const double timeSec = mParamTime[i]->get() * 0.001; // ms -> s
-        mValueTime[i] = (float)(timeSec * mSampleRate); 
+        
+        //Lesson 5
+        //mValueTime[i] = (float)(timeSec * mSampleRate);
+        
+        //Lesson 6 - delay with smoothing exp
+        mValueTime[i].setTarget(timeSec * mSampleRate);
     }
+    
+    //Lesson 6 Mix
+    const float mix = mParamMix->get() * 0.01f;// 단위 변경: 0~100% -> 0.00 ~ 1.00
+    mValueMix.setTargetValue(mix);
     
 }
 
 //from target, set the current value. no smoothing needed
 void FoxParameters::reset() noexcept
 {
+    //lesson 5 - linear
     // make current value as a target value!
     //because no need smoothing in reset 
     //Go directly to the target value! no need to smoothe
-    mValueTest.setCurrentAndTargetValue(mValueTest.getTargetValue());
+    //mValueTest.setCurrentAndTargetValue(mValueTest.getTargetValue());
     
+    //lesson 6 - exponential
+    mValueTest.setCurrent(mValueTest.getTarget());
     //Go directly to the target value! no need to smoothe!! as it's reset!
     mValueGain.setCurrentAndTargetValue(mValueGain.getTargetValue());
+    
+    //delay with exp
+    mValueTime[0].setCurrent(mValueTime[0].getTarget());
+    mValueTime[1].setCurrent(mValueTime[1].getTarget());
+    
+    //mix
+    mValueMix.setCurrentAndTargetValue(mValueMix.getTargetValue());
 }
 
 
 float FoxParameters::getValueTest() const noexcept
 {
-    return mValueTest.getCurrentValue();
+    //Lesson 5
+    //return mValueTest.getCurrentValue();
+    
+    //Lesson 6
+    return (float)mValueTest.getCurrent();
 }
 
 float FoxParameters::getValueGain() const noexcept
@@ -186,5 +249,14 @@ float FoxParameters::getValueGain() const noexcept
 
 float FoxParameters::getValueTime(const int inChannel) const noexcept
 {
-    return mValueTime[inChannel];
+    //Lesson 5 with linear smoothing
+    //return mValueTime[inChannel];
+    
+    //lesson 6 exp delay
+    return (float)mValueTime[inChannel].getCurrent();
+}
+
+float FoxParameters::getValueMix() const noexcept
+{
+    return mValueMix.getCurrentValue();
 }

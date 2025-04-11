@@ -10,7 +10,7 @@
 
 #pragma once
 #include <JuceHeader.h>
-
+#include "FoxSmoother.h"
 namespace FoxParamIDs
 {
     const juce::ParameterID Test("Test", 1);
@@ -19,6 +19,9 @@ namespace FoxParamIDs
     {
         // Gain : parameter name, 1: version ( logic pro requires version which is not 0 ! )
         const juce::ParameterID Gain("Gain", 1);
+    
+        //Lesson 6 - mix for delay
+        const juce::ParameterID Mix("Mix", 1);
     }
     namespace Delay
     {
@@ -37,7 +40,10 @@ class FoxParameters
     void update() noexcept;//normalize dB -> ratio ( -1 ~ 1 ) initialize Target value
     void reset() noexcept; //Initialize Current value
     
+    //Gain
     float getValueGain() const noexcept; // no except : no exeption handling. because this function should be fast fast fast.
+   
+    //Test
     float getValueTest() const noexcept;
     
     static constexpr float kTimeMin = 5.0f;
@@ -45,6 +51,9 @@ class FoxParameters
     float getValueTime(const int inChannel) const noexcept;
     
     static juce::AudioProcessorValueTreeState::ParameterLayout initParameterLayout();
+    
+    //Lesson 6 - mix
+    float getValueMix() const noexcept;
     
     private:
     juce::AudioProcessorValueTreeState& mApvts;
@@ -62,13 +71,23 @@ class FoxParameters
         
     //Delay
     juce::AudioParameterFloat* mParamTime[2];
-    float mValueTime[2];
     
+    //Lesson 5 - Delay - but zipper noise
+    //float mValueTime[2];
+    //Lesson 6 - Delay with exponential smoothing
+    FoxSmoother mValueTime[2];
     
-    //for testing
+    //for testing Lesson 5 - linear smoothing
     juce::AudioParameterFloat* mParamTest;
-    juce::LinearSmoothedValue<float> mValueTest;
+    //juce::LinearSmoothedValue<float> mValueTest;
 
+    
+    //Lesson 6 - Exponential smoothing
+    FoxSmoother mValueTest;
+    
+    //Lesson 6 - mix
+    juce::AudioParameterFloat* mParamMix;
+    juce::LinearSmoothedValue<float> mValueMix;
     
     
     //safety
