@@ -19,6 +19,8 @@ static juce::String stringFromDecibels(float inValue, int)
 
 //for Delay
 // ms = 1/1000 second UI
+//1000ms이 넘어가면 s초 단위로 변경
+//input이 숫자
 static juce::String stringFromMilliSeconds(float inValue, int)
 {
     //check if it's less than 1000 ( 1s). till 999 ms
@@ -31,6 +33,27 @@ static juce::String stringFromMilliSeconds(float inValue, int)
         return juce::String(inValue * 0.001f, 4) + " s"; // convert 1000.x ms -> 1.xxx s
     }
 }
+
+//class 8 : value from string
+//input이 String
+//만약 단위까지 넣어 입력하면 적용시켜주기 ex "10 ms" ->
+static float millisecondFromString(const juce::String& inText)
+{
+    const float value = inText.getFloatValue(); //"300" -> 300.0f 로 자동변경!
+    
+    //마지막 글자가 ms 냐 ? 대소문자 구분 없이.
+    if(inText.endsWithIgnoreCase("ms")==false)
+    {
+        //ms 최소값보다 작은 값을 입력해버렸거나, 초단위로 입력을 한 경우 --> 무조건 초 단위로 고려
+        if(value < FoxParameters::kTimeMin || inText.endsWithIgnoreCase("s"))
+        {
+            return value * 1000.0f;
+        }
+    }
+    
+    return value;
+}
+
 
 //Lesson 6 - mix : set unit.
 static juce::String stringFromPercent(float inValue, int)
@@ -51,7 +74,8 @@ static void castParameter(juce::AudioProcessorValueTreeState& inApvts,
 }
 
 
-FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts) : mApvts(inApvts)
+FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts)
+: mApvts(inApvts)
 {
     //RangedAudioParameter is always normalized ( 0 ~ 1 )..
     //getParamID() = string name "Gain" is returned
@@ -70,6 +94,9 @@ FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts) : mApv
     
     //Lesson 6 Mix
     castParameter(mApvts, FoxParamIDs::Output::Mix, mParamMix);
+    
+    //class 8 feedback
+    castParameter(mApvts, FoxParamIDs::Feedback::Amount, mParamAmount);
     
 }
 
@@ -107,6 +134,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                                juce::NormalisableRange<float>(kTimeMin, kTimeMax, 0.1f),
                                                                500.0f,
                                                                juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromMilliSeconds)
+                                                                   .withValueFromStringFunction(millisecondFromString)
+                                                               //stringFromMilliSeconds, millisecondFromString -> 체인 콜링 방식. 자기를 리턴.. 같은 방식 적용 주르륵 연결
                                                                ));
     }
     
@@ -117,7 +146,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            50.0f,
                                                            juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromPercent)));
-    
+
+    //Lesson 8 - feedback
+    //need to be percent(%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(FoxParamIDs::Feedback::Amount,
+                                                           "Amount",
+                                                           juce::NormalisableRange<float>(0.0f, 95.0f, 1.0f), // if max is 100이면 삑 소리남
+                                                           50.0f,
+                                                           juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromPercent)));
     
     // juce::audioparameter ( RangedAudioParamter is parent. it's always range from 0 to 1 )
     // - int : ..?
@@ -148,6 +184,10 @@ void FoxParameters::prepare(const double inSampleRate) noexcept
     //Lesson 6 Mix
     mValueMix.reset(mSampleRate, timeLinearSmoothing);
     
+    //Lesson 8 Feedback
+    mValueAmount.reset(mSampleRate, timeLinearSmoothing);
+    
+    
     //prepare() is called in the begining so needed to init target and current value
     update(); // target value initialized
     reset(); // current value initialized
@@ -164,8 +204,12 @@ void FoxParameters::smoothen() noexcept
     //delay
     mValueTime[0].smoothen(); //Left
     mValueTime[1].smoothen(); //Right
+    
     //Mix
     mValueMix.getNextValue();
+    
+    //Lesson 8
+    mValueAmount.getNextValue();
     
 }
 
@@ -207,6 +251,10 @@ void FoxParameters::update() noexcept
     const float mix = mParamMix->get() * 0.01f;// 단위 변경: 0~100% -> 0.00 ~ 1.00
     mValueMix.setTargetValue(mix);
     
+    //Lesson 8 Amount
+    const float amount = mParamAmount->get() * 0.01f;// 단위 변경: 0~100% -> 0.00 ~ 1.00
+    mValueAmount.setTargetValue(amount);
+    
 }
 
 //from target, set the current value. no smoothing needed
@@ -229,6 +277,9 @@ void FoxParameters::reset() noexcept
     
     //mix
     mValueMix.setCurrentAndTargetValue(mValueMix.getTargetValue());
+    
+    //Lesson 8 Feedback
+    mValueAmount.setCurrentAndTargetValue(mValueAmount.getTargetValue());
 }
 
 
@@ -259,4 +310,9 @@ float FoxParameters::getValueTime(const int inChannel) const noexcept
 float FoxParameters::getValueMix() const noexcept
 {
     return mValueMix.getCurrentValue();
+}
+
+float FoxParameters::getValueAmount() const noexcept
+{
+    return mValueAmount.getCurrentValue();
 }

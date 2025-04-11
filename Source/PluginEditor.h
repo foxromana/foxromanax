@@ -10,7 +10,9 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "FoxRotaryKnob.h"
+//#include "FoxRotaryKnob.h"
+#include "PanelDelay.h"
+#include "PanelOutput.h"
 
 //==============================================================================
 /**
@@ -34,8 +36,12 @@ private:
     //juce::Slider mSliderTest;
     //juce::AudioProcessorValueTreeState::SliderAttachment mAttachmentSliderTest;
     
-    juce::Label mLabelGain;
-    FoxRotaryKnob mKnobGain;
+    //juce::Label mLabelGain;
+    //FoxRotaryKnob mKnobGain;
+    
+    //Class 8 - Panel
+    PanelDelay mPanelDelay;
+    PanelOutput mPanelOutput; 
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessorEditor)
 };

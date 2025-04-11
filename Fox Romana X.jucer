@@ -5,6 +5,14 @@
               companyName="Fox Romana" companyCopyright="Fox Romana" companyEmail="fox.romana.music@gmail.com"
               cppLanguageStandard="20">
   <MAINGROUP id="mI4mOu" name="Fox Romana X">
+    <GROUP id="{A8F54AFB-8E12-88F8-66E8-4879286D00B8}" name="Panels">
+      <FILE id="of8YSj" name="PanelBase.cpp" compile="1" resource="0" file="Source/PanelBase.cpp"/>
+      <FILE id="Wunj8s" name="PanelBase.h" compile="0" resource="0" file="Source/PanelBase.h"/>
+      <FILE id="EmYmRQ" name="PanelDelay.cpp" compile="1" resource="0" file="Source/PanelDelay.cpp"/>
+      <FILE id="os5Ax9" name="PanelDelay.h" compile="0" resource="0" file="Source/PanelDelay.h"/>
+      <FILE id="eGLclh" name="PanelOutput.cpp" compile="1" resource="0" file="Source/PanelOutput.cpp"/>
+      <FILE id="jLj3xJ" name="PanelOutput.h" compile="0" resource="0" file="Source/PanelOutput.h"/>
+    </GROUP>
     <GROUP id="{9FCC3E9F-9A1D-A9D2-4D5E-D9433C60BC14}" name="Customs">
       <FILE id="P3Cno7" name="FoxRotaryKnob.cpp" compile="1" resource="0"
             file="Source/FoxRotaryKnob.cpp"/>

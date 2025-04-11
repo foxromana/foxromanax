@@ -47,4 +47,37 @@ namespace FoxSize
         }
         static constexpr int Height = Width + TextBox::Height;
     }
+
+    namespace Panel
+        {
+            namespace Delay
+            {
+                static constexpr int Width = Padding::Width + RotaryKnob::Width + Padding::Width;
+                static constexpr int Height = Padding::Top::Height +
+                                              Label::Height +
+                                              RotaryKnob::Height +
+                                              Padding::Bottom::Height +
+                                              Padding::Top::Height +
+                                              Label::Height +
+                                              RotaryKnob::Height +
+                                              Padding::Bottom::Height;
+            }
+            
+            namespace Output
+            {
+                static constexpr int Width = Padding::Width + RotaryKnob::Width + Padding::Width;
+                static constexpr int Height = Delay::Height;
+            }
+        }
+        
+        namespace GUI
+        {
+            namespace Header
+            {
+                static constexpr int Height = 40;
+            }
+            
+            static constexpr int Width = Panel::Delay::Width + Panel::Output::Width;
+            static constexpr int Height = Header::Height + Panel::Delay::Height;
+        }
 }

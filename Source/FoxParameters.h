@@ -25,7 +25,13 @@ namespace FoxParamIDs
     }
     namespace Delay
     {
-    const juce::ParameterID Time[2] {{"TimeL", 1}, {"TimeR", 1}};
+        const juce::ParameterID Time[2] {{"TimeL", 1}, {"TimeR", 1}};
+    }
+
+    //Class 8
+    namespace Feedback
+    {
+        const juce::ParameterID Amount("Amount", 1);
     }
 }
 class FoxParameters
@@ -54,6 +60,9 @@ class FoxParameters
     
     //Lesson 6 - mix
     float getValueMix() const noexcept;
+    
+    //class 8 - feedback
+    float getValueAmount() const noexcept; 
     
     private:
     juce::AudioProcessorValueTreeState& mApvts;
@@ -89,6 +98,9 @@ class FoxParameters
     juce::AudioParameterFloat* mParamMix;
     juce::LinearSmoothedValue<float> mValueMix;
     
+    //class 8 - feedback
+    juce::AudioParameterFloat* mParamAmount;
+    juce::LinearSmoothedValue<float> mValueAmount;
     
     //safety
     //if there is no user's constructor, system create temporary copied constructor inside.
