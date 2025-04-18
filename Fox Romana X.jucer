@@ -10,6 +10,9 @@
       <FILE id="Wunj8s" name="PanelBase.h" compile="0" resource="0" file="Source/PanelBase.h"/>
       <FILE id="EmYmRQ" name="PanelDelay.cpp" compile="1" resource="0" file="Source/PanelDelay.cpp"/>
       <FILE id="os5Ax9" name="PanelDelay.h" compile="0" resource="0" file="Source/PanelDelay.h"/>
+      <FILE id="a8af3Z" name="PanelFeedback.cpp" compile="1" resource="0"
+            file="Source/PanelFeedback.cpp"/>
+      <FILE id="YBzEPg" name="PanelFeedback.h" compile="0" resource="0" file="Source/PanelFeedback.h"/>
       <FILE id="eGLclh" name="PanelOutput.cpp" compile="1" resource="0" file="Source/PanelOutput.cpp"/>
       <FILE id="jLj3xJ" name="PanelOutput.h" compile="0" resource="0" file="Source/PanelOutput.h"/>
     </GROUP>
@@ -21,11 +24,16 @@
     <GROUP id="{1872ECD3-6B78-92D7-554C-CE993ABAD12E}" name="Modules">
       <FILE id="N0mrX5" name="ModuleDelay.cpp" compile="1" resource="0" file="Source/ModuleDelay.cpp"/>
       <FILE id="s6iFIl" name="ModuleDelay.h" compile="0" resource="0" file="Source/ModuleDelay.h"/>
+      <FILE id="w7O3w7" name="ModuleFeedback.cpp" compile="1" resource="0"
+            file="Source/ModuleFeedback.cpp"/>
+      <FILE id="m6r8nA" name="ModuleFeedback.h" compile="0" resource="0"
+            file="Source/ModuleFeedback.h"/>
       <FILE id="tOMAEE" name="ModuleOutput.cpp" compile="1" resource="0"
             file="Source/ModuleOutput.cpp"/>
       <FILE id="bQrPkj" name="ModuleOutput.h" compile="0" resource="0" file="Source/ModuleOutput.h"/>
     </GROUP>
     <GROUP id="{EC38C25D-E92A-7F37-1E2F-8D6F499A6B93}" name="Utils">
+      <FILE id="zo7juw" name="FoxHelper.h" compile="0" resource="0" file="Source/FoxHelper.h"/>
       <FILE id="aqz69P" name="FoxSize.h" compile="0" resource="0" file="Source/FoxSize.h"/>
       <FILE id="yYHloH" name="FoxSmoother.cpp" compile="1" resource="0" file="Source/FoxSmoother.cpp"/>
       <FILE id="WIa5RS" name="FoxSmoother.h" compile="0" resource="0" file="Source/FoxSmoother.h"/>
@@ -33,6 +41,8 @@
     <GROUP id="{10E26411-164A-97F5-0474-E188DE90F45F}" name="DSP">
       <FILE id="N3rfGZ" name="FoxDelay.cpp" compile="1" resource="0" file="Source/FoxDelay.cpp"/>
       <FILE id="rwzg7J" name="FoxDelay.h" compile="0" resource="0" file="Source/FoxDelay.h"/>
+      <FILE id="st4D7d" name="FoxFeedback.cpp" compile="1" resource="0" file="Source/FoxFeedback.cpp"/>
+      <FILE id="h5fZVp" name="FoxFeedback.h" compile="0" resource="0" file="Source/FoxFeedback.h"/>
     </GROUP>
     <GROUP id="{607B74D9-5641-6199-DBFE-3EE91DA97A24}" name="Parameters">
       <FILE id="XKqDnf" name="FoxParameters.cpp" compile="1" resource="0"

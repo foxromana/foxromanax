@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FoxHelper.h"
 
 //==============================================================================
 FoxRomanaXAudioProcessor::FoxRomanaXAudioProcessor()
@@ -103,6 +104,13 @@ void FoxRomanaXAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     
     //Lesson 6
     mModuleDelay.prepare(sampleRate);
+    
+    //Lesson 9
+    //mFeedbackL.prepare();
+    //mFeedbackR.prepare();
+    
+    //lesson 9-2 feedback module을 쓴 경우
+    mModuleFeedback.prepare();
 }
 
 void FoxRomanaXAudioProcessor::releaseResources()
@@ -188,6 +196,8 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //dry = input
         const float dryL = bufferInputL[i];
         const float dryR = bufferInputR[i];
+        
+        
         //wet = output
         //const float wetL = mDelayL.process(dryL, mParameters.getValueTime(0));
         //const float wetR = mDelayR.process(dryR, mParameters.getValueTime(1));
@@ -196,19 +206,40 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //bufferOutputL[i] = mParameters.getValueTest();
         //bufferOutputR[i] = mParameters.getValueTest();
 
+      
+        //class 9 -----------
+        //dry = input + pop sample
+        //const float feedbackL = mFeedbackL.popSample();
+        //const float feedbackR = mFeedbackR.popSample();
+        
+        //lesson 9-2 feedback module을 쓴 경우
+        float feedbackL = 0.0f;
+        float feedbackR = 0.0f;
+        mModuleFeedback.ProcessPop(feedbackL, feedbackR);
+        
+        //--------class 9 //
+        
         
         //class 6 - module output. mix only
         float wetL = 0.0f;
         float wetR = 0.0f;
-        mModuleDelay.process(dryL, dryR,
-                             wetL, wetR,
-                             mParameters.getValueTime(0),
-                             mParameters.getValueTime(1));
+        // 이때는 feedback (wet)이 없고 dry 로 한번 딜레이로 나옴
+        //mModuleDelay.process(dryL, dryR,
+        //                     wetL, wetR,
+        //                     mParameters.getValueTime(0),
+        //                     mParameters.getValueTime(1));
   
         //class 6
         //const float mixL = dryL + (wetL * mParameters.getValueMix());
         //const float mixR = dryR + (wetR * mParameters.getValueMix());
 
+    
+        //class 9 : dry 에 전단계에서 발생한 feedback 결과도 더하기 = 메아리 생기게
+        mModuleDelay.process(dryL + feedbackL, dryR + feedbackR,
+                             wetL, wetR,
+                             mParameters.getValueTime(0),
+                             mParameters.getValueTime(1));
+        
         
         //class 7 - Output module mix * gain
         const float outL = mModuleOutput.process(dryL, wetL,
@@ -216,7 +247,7 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                                            mParameters.getValueGain());
 
         const float outR = mModuleOutput.process(dryR, wetR,
-                                           mParameters.getValueMix(),
+                                           mParameters.getValueMix(),  
                                            mParameters.getValueGain());
 
             
@@ -227,7 +258,21 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //class 7
         bufferOutputL[i] = outL;
         bufferOutputR[i] = outR;
+        
+        //class 9 : feedback push!
+        //mFeedbackL.pushSample(wetL, mParameters.getValueAmount());
+        //mFeedbackR.pushSample(wetR, mParameters.getValueAmount());
+        
+        //lesson 9-2 feedback module을 쓴 경우
+        mModuleFeedback.ProcessPush(wetL, wetR, mParameters.getValueAmount());
     }
+    
+    //최종 validation 단계
+    //debug mode에서만 사용. Edit Scheme 메뉴에서 release 로 바꾸고 빌드하면 이 코드는 실행하지 않음
+    //마지막 딜레이 아웃풋이 허용가능한 dB 안인지 확인하고 만약 값이 너무 크거나 숫자가 아니면 소리를 꺼버려서 귀를 보호하기
+    #if JUCE_DEBUG
+    FoxHelper::protectEars(buffer);
+    #endif
 }
 
 //==============================================================================
@@ -262,6 +307,7 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new FoxRomanaXAudioProcessor();
 }
 
+//재생을 멈췄다가 처음부터 다시 시작될 때 호출되는 함수
 void FoxRomanaXAudioProcessor::reset()
 {
     mParameters.reset();
@@ -273,6 +319,12 @@ void FoxRomanaXAudioProcessor::reset()
     
     //lesson 6
     mModuleDelay.reset();
+    
+    //lesson 9
+    //mFeedbackL.reset();
+    //mFeedbackR.reset();
+    //lesson 9-2 feedback module을 쓴 경우
+    mModuleFeedback.reset();
 }
 
 juce::AudioProcessorValueTreeState& FoxRomanaXAudioProcessor::getApvts() noexcept

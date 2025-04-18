@@ -24,7 +24,9 @@ audioProcessor (p),
 //class 7 advanced with FoxRotary Knob
 //mKnobGain(audioProcessor.getApvts(), FoxParamIDs::Output::Gain.getParamID())
 mPanelDelay("Delay", audioProcessor),
-mPanelOutput("Output", audioProcessor)
+mPanelOutput("Output", audioProcessor),
+//class 9 feedback panel added
+mPanelFeedback("Feedback", audioProcessor)
 {
     //class 7
     //setSize (700, 500);
@@ -49,6 +51,9 @@ mPanelOutput("Output", audioProcessor)
     //Class 8
     addAndMakeVisible(mPanelDelay);
     addAndMakeVisible(mPanelOutput);
+    
+    //Class 9 - Feedback panel
+    addAndMakeVisible(mPanelFeedback);
 }
 
 FoxRomanaXAudioProcessorEditor::~FoxRomanaXAudioProcessorEditor()
@@ -95,9 +100,10 @@ void FoxRomanaXAudioProcessorEditor::resized()
     //크기
     mPanelDelay.setSize(FoxSize::Panel::Delay::Width, FoxSize::Panel::Delay::Height);
     mPanelOutput.setSize(FoxSize::Panel::Output::Width, FoxSize::Panel::Output::Height);
-    //위치
-    //헤더 높이 만큼 밑으로 내려
+    mPanelFeedback.setSize(FoxSize::Panel::Feedback::Width, FoxSize::Panel::Feedback::Height);
+    
+    //위치 - 헤더 높이 만큼 밑으로 내려
     mPanelDelay.setTopLeftPosition(0,FoxSize::GUI::Header::Height);
-    //딜레이 너비 옆 부터
-    mPanelOutput.setTopLeftPosition(mPanelDelay.getRight(),mPanelDelay.getY());
+    mPanelFeedback.setTopLeftPosition(mPanelDelay.getRight(), mPanelDelay.getY());
+    mPanelOutput.setTopLeftPosition(mPanelFeedback.getRight(),mPanelDelay.getY());
 }

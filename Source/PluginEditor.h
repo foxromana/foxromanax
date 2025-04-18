@@ -13,7 +13,7 @@
 //#include "FoxRotaryKnob.h"
 #include "PanelDelay.h"
 #include "PanelOutput.h"
-
+#include "PanelFeedback.h"
 //==============================================================================
 /**
 */
@@ -41,7 +41,10 @@ private:
     
     //Class 8 - Panel
     PanelDelay mPanelDelay;
-    PanelOutput mPanelOutput; 
+    PanelOutput mPanelOutput;
+    
+    //Class 9 - feedback
+    PanelFeedback mPanelFeedback;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessorEditor)
 };

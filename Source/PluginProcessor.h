@@ -12,6 +12,8 @@
 #include "FoxParameters.h"
 #include "ModuleDelay.h"
 #include "ModuleOutput.h"
+#include "FoxFeedback.h"
+#include "ModuleFeedback.h"
 //==============================================================================
 /**
 */
@@ -78,6 +80,11 @@ private:
     //Lesson 7
     ModuleOutput mModuleOutput; 
     
+    //Lesson 9
+    //FoxFeedback mFeedbackL, mFeedbackR;
+    
+    //lesson 9 feedback을 모듈화 한 경우
+    ModuleFeedback mModuleFeedback; 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)
 };

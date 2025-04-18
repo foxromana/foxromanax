@@ -68,6 +68,12 @@ namespace FoxSize
                 static constexpr int Width = Padding::Width + RotaryKnob::Width + Padding::Width;
                 static constexpr int Height = Delay::Height;
             }
+    
+            namespace Feedback
+            {
+                static constexpr int Width = Padding::Width + RotaryKnob::Width + Padding::Width;
+                static constexpr int Height = Delay::Height;
+            }
         }
         
         namespace GUI
@@ -77,7 +83,7 @@ namespace FoxSize
                 static constexpr int Height = 40;
             }
             
-            static constexpr int Width = Panel::Delay::Width + Panel::Output::Width;
+        static constexpr int Width = Panel::Delay::Width + Panel::Feedback::Width + Panel::Output::Width;
             static constexpr int Height = Header::Height + Panel::Delay::Height;
         }
 }
