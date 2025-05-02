@@ -14,6 +14,7 @@
 #include "PanelDelay.h"
 #include "PanelOutput.h"
 #include "PanelFeedback.h"
+#include "PanelControl.h"
 //==============================================================================
 /**
 */
@@ -31,7 +32,7 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     FoxRomanaXAudioProcessor& audioProcessor;
-
+    
     //Class 7 - slider 기초
     //juce::Slider mSliderTest;
     //juce::AudioProcessorValueTreeState::SliderAttachment mAttachmentSliderTest;
@@ -45,6 +46,9 @@ private:
     
     //Class 9 - feedback
     PanelFeedback mPanelFeedback;
+    
+    //Class 10 - control
+    PanelControl mPanelControl; 
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessorEditor)
 };

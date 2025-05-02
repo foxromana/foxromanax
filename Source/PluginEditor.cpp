@@ -26,7 +26,9 @@ audioProcessor (p),
 mPanelDelay("Delay", audioProcessor),
 mPanelOutput("Output", audioProcessor),
 //class 9 feedback panel added
-mPanelFeedback("Feedback", audioProcessor)
+mPanelFeedback("Feedback", audioProcessor),
+//class 10 control panel added
+mPanelControl("Control", audioProcessor)
 {
     //class 7
     //setSize (700, 500);
@@ -47,6 +49,9 @@ mPanelFeedback("Feedback", audioProcessor)
     //mLabelGain.setJustificationType(juce::Justification::centred); //center
     //Attach Label
     //addAndMakeVisible(mLabelGain);
+    
+    //Class 10
+    addAndMakeVisible(mPanelControl);
     
     //Class 8
     addAndMakeVisible(mPanelDelay);
@@ -95,15 +100,17 @@ void FoxRomanaXAudioProcessorEditor::resized()
     //위치
     //mLabelGain.setTopLeftPosition(0,0);
     //mKnobGain.setTopLeftPosition(mLabelGain.getX(), mLabelGain.getBottom());
-    
+        
     //Class 8
     //크기
+    mPanelControl.setSize(FoxSize::Panel::Control::Width, FoxSize::Panel::Control::Height);
     mPanelDelay.setSize(FoxSize::Panel::Delay::Width, FoxSize::Panel::Delay::Height);
     mPanelOutput.setSize(FoxSize::Panel::Output::Width, FoxSize::Panel::Output::Height);
     mPanelFeedback.setSize(FoxSize::Panel::Feedback::Width, FoxSize::Panel::Feedback::Height);
     
     //위치 - 헤더 높이 만큼 밑으로 내려
-    mPanelDelay.setTopLeftPosition(0,FoxSize::GUI::Header::Height);
+    mPanelControl.setTopLeftPosition(0,FoxSize::GUI::Header::Height);
+    mPanelDelay.setTopLeftPosition(mPanelControl.getRight(),mPanelControl.getY());
     mPanelFeedback.setTopLeftPosition(mPanelDelay.getRight(), mPanelDelay.getY());
     mPanelOutput.setTopLeftPosition(mPanelFeedback.getRight(),mPanelDelay.getY());
 }

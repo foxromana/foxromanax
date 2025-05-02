@@ -11,6 +11,17 @@
 #pragma once
 #include <JuceHeader.h>
 #include "FoxSmoother.h"
+
+//class 10
+struct FactoryPreset
+{
+    juce::String mName;
+    float mTime[2]; //Delay time
+    float mFeedback;
+    float mMix;
+    float mGain; 
+};
+
 namespace FoxParamIDs
 {
     const juce::ParameterID Test("Test", 1);

@@ -8,6 +8,9 @@
     <GROUP id="{A8F54AFB-8E12-88F8-66E8-4879286D00B8}" name="Panels">
       <FILE id="of8YSj" name="PanelBase.cpp" compile="1" resource="0" file="Source/PanelBase.cpp"/>
       <FILE id="Wunj8s" name="PanelBase.h" compile="0" resource="0" file="Source/PanelBase.h"/>
+      <FILE id="AlJPcZ" name="PanelControl.cpp" compile="1" resource="0"
+            file="Source/PanelControl.cpp"/>
+      <FILE id="pWDebW" name="PanelControl.h" compile="0" resource="0" file="Source/PanelControl.h"/>
       <FILE id="EmYmRQ" name="PanelDelay.cpp" compile="1" resource="0" file="Source/PanelDelay.cpp"/>
       <FILE id="os5Ax9" name="PanelDelay.h" compile="0" resource="0" file="Source/PanelDelay.h"/>
       <FILE id="a8af3Z" name="PanelFeedback.cpp" compile="1" resource="0"
@@ -17,6 +20,10 @@
       <FILE id="jLj3xJ" name="PanelOutput.h" compile="0" resource="0" file="Source/PanelOutput.h"/>
     </GROUP>
     <GROUP id="{9FCC3E9F-9A1D-A9D2-4D5E-D9433C60BC14}" name="Customs">
+      <FILE id="Dew8Ij" name="FoxPresetComboBox.cpp" compile="1" resource="0"
+            file="Source/FoxPresetComboBox.cpp"/>
+      <FILE id="QWKyvv" name="FoxPresetComboBox.h" compile="0" resource="0"
+            file="Source/FoxPresetComboBox.h"/>
       <FILE id="P3Cno7" name="FoxRotaryKnob.cpp" compile="1" resource="0"
             file="Source/FoxRotaryKnob.cpp"/>
       <FILE id="I1gR43" name="FoxRotaryKnob.h" compile="0" resource="0" file="Source/FoxRotaryKnob.h"/>
@@ -34,6 +41,10 @@
     </GROUP>
     <GROUP id="{EC38C25D-E92A-7F37-1E2F-8D6F499A6B93}" name="Utils">
       <FILE id="zo7juw" name="FoxHelper.h" compile="0" resource="0" file="Source/FoxHelper.h"/>
+      <FILE id="z1TOcH" name="FoxPresetManager.cpp" compile="1" resource="0"
+            file="Source/FoxPresetManager.cpp"/>
+      <FILE id="qyjTkK" name="FoxPresetManager.h" compile="0" resource="0"
+            file="Source/FoxPresetManager.h"/>
       <FILE id="aqz69P" name="FoxSize.h" compile="0" resource="0" file="Source/FoxSize.h"/>
       <FILE id="yYHloH" name="FoxSmoother.cpp" compile="1" resource="0" file="Source/FoxSmoother.cpp"/>
       <FILE id="WIa5RS" name="FoxSmoother.h" compile="0" resource="0" file="Source/FoxSmoother.h"/>

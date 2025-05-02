@@ -48,6 +48,12 @@ namespace FoxSize
         static constexpr int Height = Width + TextBox::Height;
     }
 
+    namespace PresetComboBox
+    {
+        static constexpr int Width = 85;
+        static constexpr int Height = 23;
+    }
+
     namespace Panel
         {
             namespace Delay
@@ -74,6 +80,12 @@ namespace FoxSize
                 static constexpr int Width = Padding::Width + RotaryKnob::Width + Padding::Width;
                 static constexpr int Height = Delay::Height;
             }
+            
+            namespace Control
+            {
+                static constexpr int Width = Padding::Width + PresetComboBox::Width + Padding::Width;
+                static constexpr int Height = Delay::Height;
+            }
         }
         
         namespace GUI
@@ -83,7 +95,7 @@ namespace FoxSize
                 static constexpr int Height = 40;
             }
             
-        static constexpr int Width = Panel::Delay::Width + Panel::Feedback::Width + Panel::Output::Width;
+            static constexpr int Width = Panel::Control::Width + Panel::Delay::Width + Panel::Feedback::Width + Panel::Output::Width;
             static constexpr int Height = Header::Height + Panel::Delay::Height;
         }
 }
