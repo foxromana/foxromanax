@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "FoxPresetManager.h"
 
 //==============================================================================
 /*
@@ -18,9 +19,20 @@
 class FoxPresetComboBox  : public juce::ComboBox
 {
     public:
-        FoxPresetComboBox();
+        FoxPresetComboBox(FoxPresetManager& inPresetManager);
         ~FoxPresetComboBox() override;
 
     private:
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxPresetComboBox)
+        FoxPresetManager& mPresetManager;
+        void resetByFactoryPreset() noexcept;
+    
+        std::unique_ptr<juce::FileChooser> mFileChooser;
+        void resetByXmlPreset() noexcept;
+        enum IdComboBoxPreset
+        {
+            Save = 1,
+            Load = 2
+        };
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxPresetComboBox)
 };

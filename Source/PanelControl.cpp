@@ -15,7 +15,8 @@
 //==============================================================================
 PanelControl::PanelControl(const juce::String& inTitle, FoxRomanaXAudioProcessor& inAudioProcessor)
 : //Base clasee
- PanelBase(inTitle, inAudioProcessor)
+ PanelBase(inTitle, inAudioProcessor),
+mPresetComboBox(mAudioProcessor.getPresetManager())
 {
     mLabelPreset.setText("Preset", juce::NotificationType::dontSendNotification);
     mLabelPreset.setJustificationType(juce::Justification::centred);

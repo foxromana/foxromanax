@@ -316,3 +316,15 @@ float FoxParameters::getValueAmount() const noexcept
 {
     return mValueAmount.getCurrentValue();
 }
+
+void FoxParameters::setParamsByFactoryPreset(const FactoryPreset& inPreset) noexcept
+{
+    for(int i = 0 ; i<2 ; ++i)
+    {
+        *(mParamTime[i]) = inPreset.mTime[i];
+    }
+    
+    (*mParamAmount) = inPreset.mFeedback;
+    (*mParamMix) = inPreset.mMix;
+    (*mParamGain) = inPreset.mGain;
+}

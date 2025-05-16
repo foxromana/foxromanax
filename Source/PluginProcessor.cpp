@@ -17,7 +17,9 @@ FoxRomanaXAudioProcessor::FoxRomanaXAudioProcessor()
 //member variables objects initialization - calling consturctor of member object
 mApvts(*this, nullptr, "FoxParameters", FoxParameters::initParameterLayout()),
 // parameters
-mParameters(mApvts)
+mParameters(mApvts),
+//preset manager
+mPresetManager(mParameters)
 {
     DBG("HJY: contructor");
 }
@@ -330,4 +332,9 @@ void FoxRomanaXAudioProcessor::reset()
 juce::AudioProcessorValueTreeState& FoxRomanaXAudioProcessor::getApvts() noexcept
 {
     return mApvts; 
+}
+
+FoxPresetManager& FoxRomanaXAudioProcessor::getPresetManager() noexcept
+{
+    return mPresetManager; 
 }

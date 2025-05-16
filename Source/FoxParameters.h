@@ -48,70 +48,72 @@ namespace FoxParamIDs
 class FoxParameters
 {
     public:
-    FoxParameters(juce::AudioProcessorValueTreeState& inApvts);
-    ~FoxParameters();
-    
-    //for smoothe changing 
-    void prepare(const double inSampleRate) noexcept;
-    void smoothen() noexcept; 
-    void update() noexcept;//normalize dB -> ratio ( -1 ~ 1 ) initialize Target value
-    void reset() noexcept; //Initialize Current value
-    
-    //Gain
-    float getValueGain() const noexcept; // no except : no exeption handling. because this function should be fast fast fast.
-   
-    //Test
-    float getValueTest() const noexcept;
-    
-    static constexpr float kTimeMin = 5.0f;
-    static constexpr float kTimeMax = 2000.0f;
-    float getValueTime(const int inChannel) const noexcept;
-    
-    static juce::AudioProcessorValueTreeState::ParameterLayout initParameterLayout();
-    
-    //Lesson 6 - mix
-    float getValueMix() const noexcept;
-    
-    //class 8 - feedback
-    float getValueAmount() const noexcept; 
-    
-    private:
-    juce::AudioProcessorValueTreeState& mApvts;
-    
-    // this should be double to store .xxxxxxxxxxx many numbers
-    double mSampleRate;
-    
-    //Gain
-    juce::AudioParameterFloat* mParamGain; // for avoiding casting / mapping all the time. do this job beforehand.
-    
-    //smoothed Gain
-    juce::LinearSmoothedValue<float> mValueGain;
-    
-    //float mValueGain; // ratio
+        FoxParameters(juce::AudioProcessorValueTreeState& inApvts);
+        ~FoxParameters();
         
-    //Delay
-    juce::AudioParameterFloat* mParamTime[2];
+        //for smoothe changing
+        void prepare(const double inSampleRate) noexcept;
+        void smoothen() noexcept;
+        void update() noexcept;//normalize dB -> ratio ( -1 ~ 1 ) initialize Target value
+        void reset() noexcept; //Initialize Current value
+        
+        //Gain
+        float getValueGain() const noexcept; // no except : no exeption handling. because this function should be fast fast fast.
+       
+        //Test
+        float getValueTest() const noexcept;
+        
+        static constexpr float kTimeMin = 5.0f;
+        static constexpr float kTimeMax = 2000.0f;
+        float getValueTime(const int inChannel) const noexcept;
+        
+        static juce::AudioProcessorValueTreeState::ParameterLayout initParameterLayout();
+        
+        //Lesson 6 - mix
+        float getValueMix() const noexcept;
+        
+        //class 8 - feedback
+        float getValueAmount() const noexcept;
     
-    //Lesson 5 - Delay - but zipper noise
-    //float mValueTime[2];
-    //Lesson 6 - Delay with exponential smoothing
-    FoxSmoother mValueTime[2];
-    
-    //for testing Lesson 5 - linear smoothing
-    juce::AudioParameterFloat* mParamTest;
-    //juce::LinearSmoothedValue<float> mValueTest;
+        //class 5/16
+        void setParamsByFactoryPreset(const FactoryPreset& inPreset) noexcept; 
+    private:
+        juce::AudioProcessorValueTreeState& mApvts;
+        
+        // this should be double to store .xxxxxxxxxxx many numbers
+        double mSampleRate;
+        
+        //Gain
+        juce::AudioParameterFloat* mParamGain; // for avoiding casting / mapping all the time. do this job beforehand.
+        
+        //smoothed Gain
+        juce::LinearSmoothedValue<float> mValueGain;
+        
+        //float mValueGain; // ratio
+            
+        //Delay
+        juce::AudioParameterFloat* mParamTime[2];
+        
+        //Lesson 5 - Delay - but zipper noise
+        //float mValueTime[2];
+        //Lesson 6 - Delay with exponential smoothing
+        FoxSmoother mValueTime[2];
+        
+        //for testing Lesson 5 - linear smoothing
+        juce::AudioParameterFloat* mParamTest;
+        //juce::LinearSmoothedValue<float> mValueTest;
 
-    
-    //Lesson 6 - Exponential smoothing
-    FoxSmoother mValueTest;
-    
-    //Lesson 6 - mix
-    juce::AudioParameterFloat* mParamMix;
-    juce::LinearSmoothedValue<float> mValueMix;
-    
-    //class 8 - feedback
-    juce::AudioParameterFloat* mParamAmount;
-    juce::LinearSmoothedValue<float> mValueAmount;
+        
+        //Lesson 6 - Exponential smoothing
+        FoxSmoother mValueTest;
+        
+        //Lesson 6 - mix
+        juce::AudioParameterFloat* mParamMix;
+        juce::LinearSmoothedValue<float> mValueMix;
+        
+        //class 8 - feedback
+        juce::AudioParameterFloat* mParamAmount;
+        juce::LinearSmoothedValue<float> mValueAmount;
     
     //safety
     //if there is no user's constructor, system create temporary copied constructor inside.

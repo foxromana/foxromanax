@@ -14,8 +14,10 @@
 #include "ModuleOutput.h"
 #include "FoxFeedback.h"
 #include "ModuleFeedback.h"
+#include "FoxPresetManager.h"
 //==============================================================================
 /**
+ GUI 화면 뜨기 전에 plugin processor 은 먼저 실행
 */
 class FoxRomanaXAudioProcessor  : public juce::AudioProcessor
 {
@@ -61,7 +63,10 @@ public:
     void reset() override;
     
     juce::AudioProcessorValueTreeState& getApvts() noexcept;
-
+    
+    //Preset manager obj address 
+    FoxPresetManager& getPresetManager() noexcept;
+    
 private:
     
     //parameter storage that JUCE is recommending!
@@ -84,7 +89,10 @@ private:
     //FoxFeedback mFeedbackL, mFeedbackR;
     
     //lesson 9 feedback을 모듈화 한 경우
-    ModuleFeedback mModuleFeedback; 
+    ModuleFeedback mModuleFeedback;
+    
+    //lesson preset !
+    FoxPresetManager mPresetManager;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)
 };

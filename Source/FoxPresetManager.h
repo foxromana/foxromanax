@@ -18,18 +18,27 @@
 class FoxPresetManager
 {
     public:
-        FoxPresetManager();
+        FoxPresetManager(FoxParameters& inParameters);
         ~FoxPresetManager();
     
+        //Factory Preset
         juce::String getNameFactoryPreset(const int inIndex) const noexcept;
         int getNumFactoryPresets() const noexcept;
         int getFactoryPresetCurrent() const noexcept;
         void setFactoryPreset(const int inIndex) noexcept;
     
+        const juce::File& getDirPreset() const noexcept;
+    
     private:
-        juce::Array<FactoryPreset> mArrayFactoryPresets;
+        FoxParameters& mParameters;
+        juce::Array<FactoryPreset> mArrayFactoryPresets; // preset data
+        //preset index that user selects
+        // -1 : not selected
         int mFactoryPresetCurrent;
         void resetFactoryPresets() noexcept;
+  
+        //preset 저장 경로
+        const juce::File mDirPreset;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FoxPresetManager)
     
