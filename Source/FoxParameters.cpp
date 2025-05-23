@@ -328,3 +328,21 @@ void FoxParameters::setParamsByFactoryPreset(const FactoryPreset& inPreset) noex
     (*mParamMix) = inPreset.mMix;
     (*mParamGain) = inPreset.mGain;
 }
+
+juce::ValueTree FoxParameters::getStateCopied() const noexcept
+{
+    return mApvts.copyState();
+}
+
+bool FoxParameters::setParamsByValueTree(const juce::ValueTree& inState) noexcept
+{
+    //type 이 뭐야 : FoxParameters
+    //Plugin Processor 에서 맨 처음 mApvts을 선언할때 valuteTreetype(이름)을 "FoxParameters" 로 저장을 했었지!
+    if(inState.getType() == mApvts.state.getType()) //<FoxParameters> 가 맞는지 확인
+    {
+        //<FoxParameters>가 맞으면 파라미터 replace 가능
+        mApvts.replaceState(inState);
+        return true;
+    }
+    return false;
+}

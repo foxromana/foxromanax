@@ -28,6 +28,14 @@ class FoxPresetManager
         void setFactoryPreset(const int inIndex) noexcept;
     
         const juce::File& getDirPreset() const noexcept;
+        //lesson 12
+        const juce::String& getXmlPresetCurrent() const noexcept;
+        void setXmlPresetCurrent(const juce::String& inNamePreset) noexcept;
+        void saveXmlPreset(const juce::File& inFileXml) noexcept;
+        void loadXmlPreset(const juce::File& inFileXml) noexcept;
+    
+        const juce::Identifier& getIdState() const noexcept;
+        juce::ValueTree getState() const noexcept;
     
     private:
         FoxParameters& mParameters;
@@ -39,6 +47,11 @@ class FoxPresetManager
   
         //preset 저장 경로
         const juce::File mDirPreset;
+    
+        //lesson 12 - 현재 프리셋 이름
+        juce::String mXmlPresetCurrent;
+    
+        const juce::Identifier mIdState;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FoxPresetManager)
     

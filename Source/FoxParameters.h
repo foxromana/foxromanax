@@ -75,8 +75,12 @@ class FoxParameters
         //class 8 - feedback
         float getValueAmount() const noexcept;
     
-        //class 5/16
-        void setParamsByFactoryPreset(const FactoryPreset& inPreset) noexcept; 
+        //class 11
+        void setParamsByFactoryPreset(const FactoryPreset& inPreset) noexcept;
+    
+        //class 12
+        juce::ValueTree getStateCopied() const noexcept;
+        bool setParamsByValueTree(const juce::ValueTree& inState) noexcept;
     private:
         juce::AudioProcessorValueTreeState& mApvts;
         

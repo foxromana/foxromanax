@@ -55,6 +55,9 @@ public:
     const juce::String getProgramName (int index) override;
     void changeProgramName (int index, const juce::String& newName) override;
 
+    //DAW 기준. 프로젝트에서 사용하고 있는 플로그인들한테 저장공간을 좀 주면서 "나 이제 나갈꺼니까 니 정보 (state)좀 이 바구니에 저장해" 함
+    //DAW가 시작될때, "나 프로젝트 시작했다,플로그인들아 니네 바구니에서 마지막으로 저장했던거 꺼내라"
+    //플러그인은 각자의 바구니에 정보를 저장/열기 가능
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;

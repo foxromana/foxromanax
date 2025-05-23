@@ -291,15 +291,68 @@ juce::AudioProcessorEditor* FoxRomanaXAudioProcessor::createEditor()
 //==============================================================================
 void FoxRomanaXAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    //plugin tree -> xml -> memory
+    // - parameter tree
+    // - preset tree
+    // 트리 벨류 이름 = 띄어쓰기가 있으면 안됨 (foxromanaX_plugin 로) 
+    juce::ValueTree statePlugin("foxromanaX_plugin"); //JucePlugin_Name = 플로그인 이름 자동으로 불러와주는 매크로
+    
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    
+    //DAW 입장에서 프로젝트 저장할 때 모든 플로그인들의 상태들을 get, 플로그인에게 정보 요청. 나 이제 프로젝트 끌꺼니까 니네 현재 정보 저장해라.
+    //Parameter 정보 바구니에 현재 정보 집어넣기 -> 차일드 노드로 집어넣기. 자식 트리 1
+    const juce::ValueTree stateParameter = mApvts.copyState();
+    if(stateParameter.isValid())
+    {
+        statePlugin.appendChild(stateParameter, nullptr);
+    }
+    
+    //preset 정보 차일드로 집어넣기. 자식 트리 2.
+    const juce::ValueTree statePreset = mPresetManager.getState();
+    if(statePreset.isValid())
+    {
+        statePlugin.appendChild(statePreset, nullptr);
+    }
+    
+    //xml 포맷으로 바꾸기
+    std::unique_ptr<juce::XmlElement> xmlState = statePlugin.createXml();
+    if(xmlState == nullptr)
+    {
+        return;
+    }
+    
+    //binary 로 만들어서 DAW(로직파일) 메모리 공간에 저장
+    copyXmlToBinary(*xmlState, destData);
+    
+    //한번 저장 잘되는지 데스크탑에 파일 만들어 확인해보기
+    const juce::File stateFile(juce::File::getSpecialLocation(juce::File::userDesktopDirectory).getChildFile("pluginState.xml"));
+    xmlState->writeTo(stateFile);
+    stateFile.create();
+    
 }
 
 void FoxRomanaXAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    //DAW 입장에서 set. DAW에서 프로젝트를 열때, 이전 프로젝트에서 저장되었던 플로그인의 상태 정보 가져오기
+    
+    /*
+    std::unique_ptr<juce::XmlElement> xmlPlugin = getXmlFromBinary(data, sizeInBytes);
+    if(xmlPlugin == nullptr)
+    {
+        return; //저장된 정보 없으면 그냥 고
+    }
+    
+    const juce::ValueTree statePlugin = juce::ValueTree::fromXml(*xmlPlugin);
+    if(statePlugin.isValid() == false)
+    {
+        return;
+    }
+    mApvts.replaceState(statePlugin);
+    */
 }
 
 //==============================================================================

@@ -63,7 +63,7 @@ FoxPresetComboBox::FoxPresetComboBox(FoxPresetManager& inPresetManager)
         //파일 탐색기 열기 - 파일 선택
         mFileChooser = std::make_unique<juce::FileChooser>(id == IdComboBoxPreset::Save ? "Save" : "Load",
                                                            mPresetManager.getDirPreset(), //프리셋 메니저 기본 파일 경로
-                                                           "", // 다 나옴
+                                                           "*.xml", // 파일확장자는 xml 만 취급
                                                            true); // false: Juce에서 쓰는 파일 탐색기를 사용/ true: 맥 전용 파일 탐색기 사용
         
         //saveMode 정의가봐 2의 배수로 enum 정의 되어 있음
@@ -74,8 +74,34 @@ FoxPresetComboBox::FoxPresetComboBox(FoxPresetManager& inPresetManager)
         
         //on close callback 함수
         //탐색기 결과를 처리
-        auto onClose = [](const juce::FileChooser& inFileChooser)
+        auto onClose = [this, id](const juce::FileChooser& inFileChooser)
         {
+            //입력을 하지 않거나 x로 꺼버리면 빈 파일이름이 저장됨
+            const juce::File result = inFileChooser.getResult();
+            const juce::String nameResult = result.getFileName();
+            if(nameResult.isNotEmpty())
+            {
+                
+                switch (id)
+                {
+                    //현재 프리셋 저장
+                    case IdComboBoxPreset::Save:
+                    {
+                        //value tree를 xml로 변환하기
+                        mPresetManager.saveXmlPreset(result.withFileExtension("xml"));
+                        break;
+                    }
+                    //저장된 프리셋 불러오기
+                    case IdComboBoxPreset::Load:
+                    {
+                        //xml 파일을 가져와서 value tree로 변환하고 현재 파라미터에 적용
+                        mPresetManager.loadXmlPreset(result);
+                        break;
+                    }
+                }
+            }
+            
+            this->resetByXmlPreset();
             
         };
         
@@ -116,4 +142,5 @@ void FoxPresetComboBox::resetByXmlPreset() noexcept
     clear(juce::NotificationType::dontSendNotification);
     addItem("Save", IdComboBoxPreset::Save);
     addItem("Load", IdComboBoxPreset::Load);
+    setText(mPresetManager.getXmlPresetCurrent(), juce::NotificationType::dontSendNotification);
 }
