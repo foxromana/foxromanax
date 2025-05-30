@@ -163,10 +163,14 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     float* bufferOutputL = buffer.getWritePointer(0);
     float* bufferOutputR = buffer.getWritePointer(1);
        
+    //DAW로부터 BPM 정보 가져오기
+    double bpm = 120.0 ;
+    updateByPositionInfo(bpm);
+    
     //class 3
     //Normalize db-> ratio update first
     //chage the final target value of for smoothing
-    mParameters.update();
+    mParameters.update(bpm);
     
     for(int i= 0; i<buffer.getNumSamples(); i++)
     {
@@ -291,6 +295,7 @@ juce::AudioProcessorEditor* FoxRomanaXAudioProcessor::createEditor()
 //==============================================================================
 void FoxRomanaXAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    //DAW: 나 이제 프로젝트 끌꺼니까 니네들(플러그인들) 현재 정보 저장해라.
     //plugin tree -> xml -> memory
     // - parameter tree
     // - preset tree
@@ -327,9 +332,9 @@ void FoxRomanaXAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     copyXmlToBinary(*xmlState, destData);
     
     //한번 저장 잘되는지 데스크탑에 파일 만들어 확인해보기
-    const juce::File stateFile(juce::File::getSpecialLocation(juce::File::userDesktopDirectory).getChildFile("pluginState.xml"));
-    xmlState->writeTo(stateFile);
-    stateFile.create();
+    //const juce::File stateFile(juce::File::getSpecialLocation(juce::File::userDesktopDirectory).getChildFile("pluginState.xml"));
+    //xmlState->writeTo(stateFile);
+    //stateFile.create();
     
 }
 
@@ -338,8 +343,9 @@ void FoxRomanaXAudioProcessor::setStateInformation (const void* data, int sizeIn
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     //DAW 입장에서 set. DAW에서 프로젝트를 열때, 이전 프로젝트에서 저장되었던 플로그인의 상태 정보 가져오기
-    
-    /*
+    //DAW: 나 이제 프로젝트 열거니까 니네들(플러그인들) 현재 정보 꺼내라.
+
+
     std::unique_ptr<juce::XmlElement> xmlPlugin = getXmlFromBinary(data, sizeInBytes);
     if(xmlPlugin == nullptr)
     {
@@ -347,12 +353,24 @@ void FoxRomanaXAudioProcessor::setStateInformation (const void* data, int sizeIn
     }
     
     const juce::ValueTree statePlugin = juce::ValueTree::fromXml(*xmlPlugin);
-    if(statePlugin.isValid() == false)
+    if(statePlugin.isValid() == false || statePlugin.getType().toString() != "foxromanaX_plugin" )
     {
         return;
     }
-    mApvts.replaceState(statePlugin);
-    */
+    
+    //preset data
+    const juce::ValueTree statePreset = statePlugin.getChildWithName(mPresetManager.getIdState());
+    if(statePreset.isValid())
+    {
+        mPresetManager.setByState(statePreset);
+    }
+    
+    //parameter data
+    const juce::ValueTree stateParameter = statePlugin.getChildWithName(mApvts.state.getType());
+    if(stateParameter.isValid())
+    {
+        mApvts.replaceState(stateParameter);
+    }
 }
 
 //==============================================================================
@@ -390,4 +408,32 @@ juce::AudioProcessorValueTreeState& FoxRomanaXAudioProcessor::getApvts() noexcep
 FoxPresetManager& FoxRomanaXAudioProcessor::getPresetManager() noexcept
 {
     return mPresetManager; 
+}
+
+
+void FoxRomanaXAudioProcessor::updateByPositionInfo(double& outBpm) noexcept
+{
+    //audio proccessor -> audio play head -> positionInfo -> BPM 가져오기
+    juce::AudioPlayHead* playHead = getPlayHead();
+    if(playHead == nullptr)
+    {
+        return;
+    }
+    
+    //playhead 통해 position 가져오기
+    //std::optional (있을수도 없을수도 있는 내용) 리턴 타입은 auto - 타입을 포인터로 지정해줌
+    auto positionInfo = playHead->getPosition();
+    if(!positionInfo)
+    {
+        //getPosition 결과가 null 이다.
+        return;
+    }
+    //getPosition 결과가 유효하다면 BPM을 가져온다. 근데 BPM도 optional 타입이라 auto로 가져와야한다.
+    auto bpmFromDAW = positionInfo->getBpm();
+    if(bpmFromDAW)
+    {
+        //이 함수의 최종 결과는 DAW가 알려준 BPM 수
+        outBpm = *bpmFromDAW;
+    }
+    
 }

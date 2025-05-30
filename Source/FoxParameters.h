@@ -26,6 +26,11 @@ namespace FoxParamIDs
 {
     const juce::ParameterID Test("Test", 1);
 
+    namespace Control
+    {
+        const juce::ParameterID Tempo("Tempo", 1);
+    }
+
     namespace Output
     {
         // Gain : parameter name, 1: version ( logic pro requires version which is not 0 ! )
@@ -37,6 +42,8 @@ namespace FoxParamIDs
     namespace Delay
     {
         const juce::ParameterID Time[2] {{"TimeL", 1}, {"TimeR", 1}};
+        //박자를 선택할 수 있는 파라미터
+        const juce::ParameterID Note[2] {{"NoteL", 1}, {"NoteR", 1}};
     }
 
     //Class 8
@@ -54,7 +61,7 @@ class FoxParameters
         //for smoothe changing
         void prepare(const double inSampleRate) noexcept;
         void smoothen() noexcept;
-        void update() noexcept;//normalize dB -> ratio ( -1 ~ 1 ) initialize Target value
+        void update(const double inBpm = 120.0) noexcept;//normalize dB -> ratio ( -1 ~ 1 ) initialize Target value
         void reset() noexcept; //Initialize Current value
         
         //Gain
@@ -118,6 +125,13 @@ class FoxParameters
         //class 8 - feedback
         juce::AudioParameterFloat* mParamAmount;
         juce::LinearSmoothedValue<float> mValueAmount;
+    
+        //Control
+        juce::AudioParameterBool* mParamTempo; //boolean
+        juce::AudioParameterChoice* mParamNote[2]; //stereo라서 2개
+    
+        //인풋 BPM 기준으로 내가 고른 박자 노트 기준 딜레이 시간을 구하는 함수 
+        double getTimeByNote(const double inBpm, const int inNote) const noexcept;
     
     //safety
     //if there is no user's constructor, system create temporary copied constructor inside.

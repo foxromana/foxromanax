@@ -36,6 +36,7 @@ class FoxPresetManager
     
         const juce::Identifier& getIdState() const noexcept;
         juce::ValueTree getState() const noexcept;
+        void setByState(const juce::ValueTree& inState) noexcept;
     
     private:
         FoxParameters& mParameters;

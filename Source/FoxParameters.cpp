@@ -90,6 +90,7 @@ FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts)
     for(int i = 0 ; i <2 ;i++)
     {
         castParameter(mApvts,FoxParamIDs::Delay::Time[i], mParamTime[i]);
+        castParameter(mApvts,FoxParamIDs::Delay::Note[i], mParamNote[i]); //BPM 기준일때
     }
     
     //Lesson 6 Mix
@@ -97,6 +98,9 @@ FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts)
     
     //class 8 feedback
     castParameter(mApvts, FoxParamIDs::Feedback::Amount, mParamAmount);
+    
+    //class 13 control
+    castParameter(mApvts, FoxParamIDs::Control::Tempo.getParamID(), mParamTempo);
     
 }
 
@@ -126,6 +130,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                            0.0f));
     
     //Lesson 4-5 - Delay
+    const juce::StringArray notes = {
+        "1/16 triplet",
+        "1/16",
+        "1/8 triplet",
+        "1/8",
+        "1/4 triplet",
+        "1/4",
+        "1/2 triplet",
+        "1/2",
+        "1/1 triplet"
+    };
+    
     for(int i=0 ; i<2 ; ++i)
     {
         const juce::String nameTime = (i == 0) ? "Delay Time L" : "Delay Time R";
@@ -137,6 +153,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                                    .withValueFromStringFunction(millisecondFromString)
                                                                //stringFromMilliSeconds, millisecondFromString -> 체인 콜링 방식. 자기를 리턴.. 같은 방식 적용 주르륵 연결
                                                                ));
+        
+        //notes 박자 기준
+        const juce::String nameNote = (i ==0)?"Delay Note L" : "Delay Note R";
+        layout.add(std::make_unique<juce::AudioParameterChoice>(FoxParamIDs::Delay::Note[i],
+                                                                nameNote,
+                                                                notes,
+                                                                notes.indexOf("1/4")));
     }
     
     //Lesson 6 - mix
@@ -154,6 +177,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
                                                            juce::NormalisableRange<float>(0.0f, 95.0f, 1.0f), // if max is 100이면 삑 소리남
                                                            50.0f,
                                                            juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromPercent)));
+    
+    //Control - 초기값이 false
+    layout.add(std::make_unique<juce::AudioParameterBool>(FoxParamIDs::Control::Tempo,"Tempo",false));
     
     // juce::audioparameter ( RangedAudioParamter is parent. it's always range from 0 to 1 )
     // - int : ..?
@@ -214,7 +240,7 @@ void FoxParameters::smoothen() noexcept
 }
 
 //set target
-void FoxParameters::update() noexcept
+void FoxParameters::update(const double inBpm) noexcept
 {
     
     //dB -> ratio calculation
@@ -235,10 +261,19 @@ void FoxParameters::update() noexcept
     //Lesson 6 - exponential smoothing
     mValueTest.setTarget(mParamTest->get());
     
+    //Control - tempo 싱크 기능을 쓰는지 안쓰는지 확인 후 BPM, note 기준
+    const bool tempo = mParamTempo->get();
+    
     //Delay: ms -> numSamples
     for(int i=0; i<2 ;++i)
     {
-        const double timeSec = mParamTime[i]->get() * 0.001; // ms -> s
+        
+        //tempo 설정시 BPM/note 기준으로 딜레이 시간 구하기, tempo가 아닌경우 딜레이 시간을 직접 인력함.
+        const double timeSec = tempo ?
+        getTimeByNote(inBpm, mParamNote[i]->getIndex()) : mParamTime[i]->get() * 0.001;
+        
+        //딜레이시간 직접 입력하는 경우.(옛날 방식)
+        //const double timeSec = mParamTime[i]->get() * 0.001; // ms -> s
         
         //Lesson 5
         //mValueTime[i] = (float)(timeSec * mSampleRate);
@@ -345,4 +380,43 @@ bool FoxParameters::setParamsByValueTree(const juce::ValueTree& inState) noexcep
         return true;
     }
     return false;
+}
+
+double FoxParameters::getTimeByNote(const double inBpm, const int inNote) const noexcept
+{
+    // bpm = beat per minute : 1분에 몇 비트인가
+    const double minutePerBeat = 1.0 / inBpm; // 1 비트에 몇분인가
+    const double secondPerBeat = minutePerBeat * 60.0; // 1비트(1박)에 몇 초인가 = quater
+ 
+    enum Notes
+    {
+        SixteenthTriplet,
+        Sixteenth, // 1/16
+        EighthTriplet,
+        Eighth, // 1/8
+        QuarterTriplet,
+        Quarter, // 1/4
+        HalfTriplet,
+        Half, // 1/2
+        Triplet // 1/1 triplet
+    };
+    
+    //시간 구하기
+    //juce::StringArray notes 의 인덱스를 enum 화 해서 매핑
+    switch (inNote) {
+        case Notes::Sixteenth: return secondPerBeat * 0.25;
+        case Notes::Eighth: return secondPerBeat * 0.5;
+        case Notes::Quarter: return secondPerBeat;
+        case Notes::Half: return secondPerBeat * 2.0;
+            
+        //Triplet : 2박 3연음
+        case Notes::SixteenthTriplet: return secondPerBeat * 0.25 * 2.0 / 3.0;
+        case Notes::EighthTriplet: return secondPerBeat * 0.5 * 2.0 / 3.0;;
+        case Notes::QuarterTriplet: return secondPerBeat * 2.0 / 3.0;
+        case Notes::HalfTriplet: return secondPerBeat * 2.0 * 2.0 / 3.0;
+        case Notes::Triplet: return secondPerBeat * 4.0 * 2.0 / 3.0;
+            
+        //dotted : 점음표. 부점 QuaterDotted : 1/4 dotted = secondPerBeat * 1.5 
+        default: return secondPerBeat;
+    }
 }

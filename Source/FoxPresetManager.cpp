@@ -144,7 +144,18 @@ const juce::Identifier& FoxPresetManager::getIdState() const noexcept
 juce::ValueTree FoxPresetManager::getState() const noexcept
 {
     juce::ValueTree state(getIdState());
+    //이름 저장
     state.setProperty("name", getXmlPresetCurrent(), nullptr);
     
     return state;
+}
+
+void FoxPresetManager::setByState(const juce::ValueTree& inState) noexcept
+{
+    //inState에서 저장된 이름 가져오기
+    if(inState.isValid() && inState.getType() == getIdState())
+    {
+        const juce::String namePreset = inState.getProperty("name");
+        setXmlPresetCurrent(namePreset);
+    }
 }

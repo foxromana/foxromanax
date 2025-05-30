@@ -96,6 +96,10 @@ private:
     
     //lesson preset !
     FoxPresetManager mPresetManager;
+    
+    //audio playhead (하얀 세로줄 재생바)기준으로 정보 받아서 BPM 기준으로 딜레이 박자 업데이트 하기
+    void updateByPositionInfo(double& outBpm) noexcept;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessor)
 };
