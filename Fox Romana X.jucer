@@ -5,6 +5,15 @@
               companyName="Fox Romana" companyCopyright="Fox Romana" companyEmail="fox.romana.music@gmail.com"
               cppLanguageStandard="20">
   <MAINGROUP id="mI4mOu" name="Fox Romana X">
+    <GROUP id="{A591D6CE-B144-3999-6762-B455E78A6EB2}" name="Assets">
+      <FILE id="xnOBFU" name="Lato-Medium.ttf" compile="0" resource="1" file="Assets/Lato-Medium.ttf"/>
+    </GROUP>
+    <GROUP id="{58D069A4-3FE8-813F-C01E-B20FFD8D0BE2}" name="LookAndFeel">
+      <FILE id="brvamP" name="FoxLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/FoxLookAndFeel.cpp"/>
+      <FILE id="A5fXNf" name="FoxLookAndFeel.h" compile="0" resource="0"
+            file="Source/FoxLookAndFeel.h"/>
+    </GROUP>
     <GROUP id="{A8F54AFB-8E12-88F8-66E8-4879286D00B8}" name="Panels">
       <FILE id="of8YSj" name="PanelBase.cpp" compile="1" resource="0" file="Source/PanelBase.cpp"/>
       <FILE id="Wunj8s" name="PanelBase.h" compile="0" resource="0" file="Source/PanelBase.h"/>
@@ -20,6 +29,10 @@
       <FILE id="jLj3xJ" name="PanelOutput.h" compile="0" resource="0" file="Source/PanelOutput.h"/>
     </GROUP>
     <GROUP id="{9FCC3E9F-9A1D-A9D2-4D5E-D9433C60BC14}" name="Customs">
+      <FILE id="dAPKcZ" name="FoxParamToggleButton.cpp" compile="1" resource="0"
+            file="Source/FoxParamToggleButton.cpp"/>
+      <FILE id="xk9Cf0" name="FoxParamToggleButton.h" compile="0" resource="0"
+            file="Source/FoxParamToggleButton.h"/>
       <FILE id="Dew8Ij" name="FoxPresetComboBox.cpp" compile="1" resource="0"
             file="Source/FoxPresetComboBox.cpp"/>
       <FILE id="QWKyvv" name="FoxPresetComboBox.h" compile="0" resource="0"

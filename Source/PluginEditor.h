@@ -15,6 +15,7 @@
 #include "PanelOutput.h"
 #include "PanelFeedback.h"
 #include "PanelControl.h"
+#include "FoxLookAndFeel.h"
 //==============================================================================
 /**
 */
@@ -39,6 +40,10 @@ private:
     
     //juce::Label mLabelGain;
     //FoxRotaryKnob mKnobGain;
+ 
+    //Class 10 - control
+    PanelControl mPanelControl;
+    
     
     //Class 8 - Panel
     PanelDelay mPanelDelay;
@@ -47,8 +52,7 @@ private:
     //Class 9 - feedback
     PanelFeedback mPanelFeedback;
     
-    //Class 10 - control
-    PanelControl mPanelControl; 
-    
+    FoxLookAndFeel mLookAndFeel; 
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxRomanaXAudioProcessorEditor)
 };

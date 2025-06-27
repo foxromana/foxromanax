@@ -15,6 +15,13 @@
 
 namespace FoxHelper
 {
+    //버튼 아이디 식별
+    enum CmdIdButtons
+    {
+        Tempo, // 0
+        Link //1 
+    };
+
     inline void protectEars(juce::AudioBuffer<float>& inBuffer)
     {
         bool warning = true;

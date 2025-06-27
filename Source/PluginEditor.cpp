@@ -23,12 +23,12 @@ audioProcessor (p),
 //mAttachmentSliderTest(audioProcessor.getApvts(),FoxParamIDs::Test.getParamID(), mSliderTest)
 //class 7 advanced with FoxRotary Knob
 //mKnobGain(audioProcessor.getApvts(), FoxParamIDs::Output::Gain.getParamID())
-mPanelDelay("Delay", audioProcessor),
+//class 10 control panel added
+mPanelControl("Control", audioProcessor),
+mPanelDelay("Delay", audioProcessor, mPanelControl.getButtonTempo()),
 mPanelOutput("Output", audioProcessor),
 //class 9 feedback panel added
-mPanelFeedback("Feedback", audioProcessor),
-//class 10 control panel added
-mPanelControl("Control", audioProcessor)
+mPanelFeedback("Feedback", audioProcessor)
 {
     //class 7
     //setSize (700, 500);
@@ -59,10 +59,15 @@ mPanelControl("Control", audioProcessor)
     
     //Class 9 - Feedback panel
     addAndMakeVisible(mPanelFeedback);
+    
+    //맨 마지막에 호출
+    //위의 add 된 그룹 컴포넌트들이 아래 lookandfeel에 적용되도록
+    setLookAndFeel(&mLookAndFeel);
 }
 
 FoxRomanaXAudioProcessorEditor::~FoxRomanaXAudioProcessorEditor()
 {
+    setLookAndFeel(nullptr);
 }
 
 //==============================================================================

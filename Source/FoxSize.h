@@ -54,6 +54,11 @@ namespace FoxSize
         static constexpr int Height = 23;
     }
 
+    namespace ParamToggleButton
+    {
+        static constexpr int Width = 35;
+        static constexpr int Height = 22;
+    }
     namespace Panel
         {
             namespace Delay

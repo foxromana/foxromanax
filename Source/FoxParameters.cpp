@@ -75,7 +75,9 @@ static void castParameter(juce::AudioProcessorValueTreeState& inApvts,
 
 
 FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts)
-: mApvts(inApvts)
+: mApvts(inApvts),
+mChannelMaster(0), //기본 마스터는 0
+mFlagLinking(false)
 {
     //RangedAudioParameter is always normalized ( 0 ~ 1 )..
     //getParamID() = string name "Gain" is returned
@@ -100,13 +102,19 @@ FoxParameters::FoxParameters(juce::AudioProcessorValueTreeState& inApvts)
     castParameter(mApvts, FoxParamIDs::Feedback::Amount, mParamAmount);
     
     //class 13 control
-    castParameter(mApvts, FoxParamIDs::Control::Tempo.getParamID(), mParamTempo);
+    castParameter(mApvts, FoxParamIDs::Control::Tempo, mParamTempo);
+    //class 14
+    castParameter(mApvts, FoxParamIDs::Control::Link, mParamTempo);
+    
+    //리스너 등록
+    mApvts.addParameterListener(FoxParamIDs::Control::Link.getParamID(), this);
     
 }
 
 FoxParameters::~FoxParameters()
 {
-    
+    //리스너 삭제
+    mApvts.removeParameterListener(FoxParamIDs::Control::Link.getParamID(), this);
 }
 
 //Static! only defined once.
@@ -132,14 +140,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
     //Lesson 4-5 - Delay
     const juce::StringArray notes = {
         "1/16 triplet",
+        "1/32 dotted",
         "1/16",
         "1/8 triplet",
+        "1/16 dotted",
         "1/8",
         "1/4 triplet",
+        "1/8 dotted",
         "1/4",
         "1/2 triplet",
+        "1/2 dotted",
         "1/2",
-        "1/1 triplet"
+        "1/1 triplet",
+        "1/2 dotted"
     };
     
     for(int i=0 ; i<2 ; ++i)
@@ -180,7 +193,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
     
     //Control - 초기값이 false
     layout.add(std::make_unique<juce::AudioParameterBool>(FoxParamIDs::Control::Tempo,"Tempo",false));
-    
+    layout.add(std::make_unique<juce::AudioParameterBool>(FoxParamIDs::Control::Link,"Stereo Link",false));
+        
     // juce::audioparameter ( RangedAudioParamter is parent. it's always range from 0 to 1 )
     // - int : ..?
     // - bool : mute button (toggle)
@@ -384,21 +398,42 @@ bool FoxParameters::setParamsByValueTree(const juce::ValueTree& inState) noexcep
 
 double FoxParameters::getTimeByNote(const double inBpm, const int inNote) const noexcept
 {
+    static constexpr double scalars[] = { 0.25 * 2.0 / 3.0,  // SixteenthTriplet,
+                                          0.125 * 1.5,       // ThirtySecondDotted,
+                                          0.25,              // Sixteenth,
+                                          0.5 * 2.0 / 3.0,   // EighthTriplet
+                                          0.25 * 1.5,        // SixteenthDotted,
+                                          0.5,               // Eighth,
+                                          1.0 * 2.0 / 3.0,   // QuarterTriplet,
+                                          0.5 * 1.5,         // EighthDotted,
+                                          1.0,               // Quarter,
+                                          2.0 * 2.0 / 3.0,   // HalfTriplet,
+                                          1.0 * 1.5,         // QuarterDotted,
+                                          2.0,               // Half,
+                                          4.0 * 2.0 / 3.0,   // Triplet,
+                                          2.0 * 1.5 };       // HalfDotted,
+    
     // bpm = beat per minute : 1분에 몇 비트인가
     const double minutePerBeat = 1.0 / inBpm; // 1 비트에 몇분인가
     const double secondPerBeat = minutePerBeat * 60.0; // 1비트(1박)에 몇 초인가 = quater
  
+    /*
     enum Notes
     {
         SixteenthTriplet,
+        ThirtySecondDotted, // 1/32 dotted
         Sixteenth, // 1/16
         EighthTriplet,
+        SixteenthDotted,
         Eighth, // 1/8
         QuarterTriplet,
+        EighthDotted,
         Quarter, // 1/4
         HalfTriplet,
+        QuarterDotted,
         Half, // 1/2
-        Triplet // 1/1 triplet
+        Triplet, // 1/1 triplet
+        HalfDotted
     };
     
     //시간 구하기
@@ -416,7 +451,97 @@ double FoxParameters::getTimeByNote(const double inBpm, const int inNote) const 
         case Notes::HalfTriplet: return secondPerBeat * 2.0 * 2.0 / 3.0;
         case Notes::Triplet: return secondPerBeat * 4.0 * 2.0 / 3.0;
             
-        //dotted : 점음표. 부점 QuaterDotted : 1/4 dotted = secondPerBeat * 1.5 
+        //dotted : 점음표. 부점 QuaterDotted : 1/4 dotted = secondPerBeat * 1.5
+        case Notes::ThirtySecondDotted: return secondPerBeat * 0.125 * 1.5;
+        case Notes::SixteenthDotted: return secondPerBeat * 0.25 * 1.5;
+        case Notes::EighthDotted: return secondPerBeat * 0.5 * 1.5;
+        case Notes::QuarterDotted: return secondPerBeat * 1.5;
+        case Notes::HalfDotted: return secondPerBeat * 2.0 * 1.5;
+
+
         default: return secondPerBeat;
     }
+     */
+    return secondPerBeat * scalars[inNote];
 }
+
+//이벤트 콜백 함수
+//어떤 파라미터 ID 에 해당하는 변수의 값에 변화가 있으면 이 함수가 호출되었는지, 파라미터의 현재값이 inValue 일때 호출
+//이 함수는 재귀처럼 불리는게 아니라 다른 스레드 처럼 호출된대...
+void FoxParameters::parameterChanged(const juce::String& inParamId, float inValue)
+{
+    if(mFlagLinking.load() == true)
+    {
+        //반복구문 때문에 이 함수가 호출된 경우
+        return; // 함수 종료. 아무것도 안하고.
+    }
+    
+    const juce::String& paramIdLink = FoxParamIDs::Control::Link.getParamID();
+    const juce::String& paramIdTimeL = FoxParamIDs::Delay::Time[0].getParamID();
+    const juce::String& paramIdTimeR = FoxParamIDs::Delay::Time[1].getParamID();
+    const juce::String& paramIdNoteL = FoxParamIDs::Delay::Note[0].getParamID();
+    const juce::String& paramIdNoteR = FoxParamIDs::Delay::Note[1].getParamID();
+    
+    //mChannelMaster = (inParamId == paramIdTimeR || inParamId == paramIdNoteR) ? 1 : 0;
+    const int masterCurrent = mChannelMaster.load();
+    const int masterNew = (inParamId == paramIdTimeR || inParamId == paramIdNoteR) ? 1 : 0;
+    if( masterCurrent != masterNew)
+    {
+        mChannelMaster.store(masterNew);
+    }
+    
+    if(inParamId == paramIdLink)
+    {
+        if (inValue == 1.0f)
+        {
+            // stereo link 가 On 인 상태
+            //sync 가 On 되면 탬포랑 딜레이 타임 변화에 대한 리스너도 on 해야 한다.
+            //이제부터는 time 과 tempo 중에 변화가 생기면 (= 마스터 채널이 될 놈) parameterChanged() 가 호출됨
+            mApvts.addParameterListener(paramIdTimeL, this);
+            mApvts.addParameterListener(paramIdTimeR, this);
+            mApvts.addParameterListener(paramIdNoteL, this);
+            mApvts.addParameterListener(paramIdNoteR, this);
+            //timerCallback 함수가 30 Hz 마다 실행된다
+            startTimerHz(30); //30 HZ
+        }
+        else
+        {
+            // stereo link 가 Off 인 상태
+            stopTimer();
+            //sync 가 안되어 있으므로 이제 리스너들 필요없음
+            mApvts.removeParameterListener(paramIdTimeL, this);
+            mApvts.removeParameterListener(paramIdTimeR, this);
+            mApvts.removeParameterListener(paramIdNoteL, this);
+            mApvts.removeParameterListener(paramIdNoteR, this);
+            
+            //링크 off 일 때는 L/R 싱크를 실행할 필요가 없으로 아래 코드로 이동하지 않도록 아예 함수를 종료(return)
+            return;
+        }
+    }
+}
+
+void FoxParameters::timerCallback()
+{
+    const int master = mChannelMaster.load(); //atomic 저장된 값 가져오는 방법
+    
+    //mFlagLinking = true;
+    mFlagLinking.store(true); //atomic 이라서 바로 true 로 안하고.. 크리티컬 섹션 기능
+    
+    //L/R 값 싱크하기
+    for(int i=0 ; i<2; i++)
+    {
+        if(i != mChannelMaster) // slave 인 경우에만
+        {
+            //슬레이브의 파라미터 Time 값을 마스터의 파라미터 값으로 변경
+            //값에 변경이 일어났으니 parameterChanged() 함수가 또 호출될거야.
+            *(mParamTime[i]) = mParamTime[master]->get(); //float
+            //슬레이브의 파라미터 Tempo 값을 마스터의 파라미터 값으로 변경
+            //값에 변경이 일어났으니 parameterChanged() 함수가 또 호출될거야.
+            *(mParamNote[i]) = mParamNote[master]->getIndex(); //tempo 타입 배열 중 선택된 index
+        }
+    }
+    
+    //mFlagLinking = false;
+    mFlagLinking.store(false);
+}
+
