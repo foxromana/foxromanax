@@ -26,8 +26,8 @@ mAttachment(inApvts, inParamId, *this)
     setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false,
                     FoxSize::RotaryKnob::Width, FoxSize::RotaryKnob::TextBox::Height);
     
-    setRotaryParameters(juce::degreesToRadians(225.0f),
-                        juce::degreesToRadians(495.0f),
+    setRotaryParameters(juce::degreesToRadians(225.0f), //로터리 시작 각도
+                        juce::degreesToRadians(495.0f), //로터리 끝 각도
                         true);
 
 }

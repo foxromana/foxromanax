@@ -102,9 +102,10 @@ mFlagLinking(false)
     castParameter(mApvts, FoxParamIDs::Feedback::Amount, mParamAmount);
     
     //class 13 control
+    //tempo 기능 - GUI 링크
     castParameter(mApvts, FoxParamIDs::Control::Tempo, mParamTempo);
-    //class 14
-    castParameter(mApvts, FoxParamIDs::Control::Link, mParamTempo);
+    //좌우 Link 기능 - GUI 링크
+    castParameter(mApvts, FoxParamIDs::Control::Link, mParamLink);
     
     //리스너 등록
     mApvts.addParameterListener(FoxParamIDs::Control::Link.getParamID(), this);

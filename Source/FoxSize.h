@@ -103,4 +103,9 @@ namespace FoxSize
             static constexpr int Width = Panel::Control::Width + Panel::Delay::Width + Panel::Feedback::Width + Panel::Output::Width;
             static constexpr int Height = Header::Height + Panel::Delay::Height;
         }
+
+        namespace Font
+        {
+            static constexpr float Height = 15.0f;
+        }
 }

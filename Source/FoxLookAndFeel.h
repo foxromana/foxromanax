@@ -87,6 +87,19 @@ public:
     FoxLookAndFeel();
     ~FoxLookAndFeel() override;
 
+    //label font 지정할때 자동으로 호출되는 함수인데 여기서 재정의
+    juce::Font getLabelFont(juce::Label&) override;
+    
+    //popup menue font 지정할때 자동으로 호출되는 함수인데 여기서 재정의
+    juce::Font getPopupMenuFont() override;
+    
+    //RotaryKnob 재정의
+    void drawRotarySlider(juce::Graphics&, int x, int y, int width, int height,
+                          float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle,
+                          juce::Slider&) override;
 private:
+    const juce::FontOptions mFontOption; //예전에는 juce::Font인데 최근 버전은 juce::FontOptions 로 변경되어가는 중
+    
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FoxLookAndFeel)
 };
