@@ -354,7 +354,10 @@ float FoxParameters::getValueTime(const int inChannel) const noexcept
     //return mValueTime[inChannel];
     
     //lesson 6 exp delay
-    return (float)mValueTime[inChannel].getCurrent();
+    //return (float)mValueTime[inChannel].getCurrent();
+    
+    //lesson crossfading 적용 시 
+    return (float)mValueTime[inChannel].getTarget();
 }
 
 float FoxParameters::getValueMix() const noexcept

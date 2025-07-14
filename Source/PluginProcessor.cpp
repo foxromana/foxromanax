@@ -172,6 +172,9 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     //chage the final target value of for smoothing
     mParameters.update(bpm);
     
+    //crossfading
+    mModuleDelay.preProcess(mParameters.getValueTime(0), mParameters.getValueTime(1));
+    
     for(int i= 0; i<buffer.getNumSamples(); i++)
     {
         //class 1

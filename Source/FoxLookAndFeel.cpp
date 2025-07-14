@@ -83,6 +83,7 @@ juce::Font FoxLookAndFeel::getPopupMenuFont()
 
 
 //슬라이더 직접 디자인하기
+//20HZ로 호출된다
 void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
                       float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle,
                       juce::Slider& inSlider)
@@ -94,8 +95,8 @@ void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     //맨땅에서 그리기를 직접 하는 경우
     //1. bound Local - 영역 지정을 먼저 한다. x,y = 가로세로 길이
     const juce::Rectangle<float> boundSlider = juce::Rectangle<int>(x,y,width,height).toFloat(); //사각형 그리기
-    g.setColour(juce::Colours::red);
-    g.drawRect(boundSlider);
+    //g.setColour(juce::Colours::red);
+    //g.drawRect(boundSlider);
     
     //2. bound square - 안에 초록색 정사각형 영역 그리기. 가로/세로를 똑같게 맞추기
     //가로,세로 중 짧은 애를 구하기
@@ -104,14 +105,14 @@ void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     const float lengthSquare = (float)length * 0.85f;
     //새로운 정사각형 그리기 ( 센터를 유지하면서 크기만 0.85 만큼 줄이기 )
     const juce::Rectangle<float> boundSquare = boundSlider.withSizeKeepingCentre(lengthSquare, lengthSquare);
-    g.setColour(juce::Colours::green);
-    g.drawRect(boundSquare);
+    //g.setColour(juce::Colours::green);
+    //g.drawRect(boundSquare);
     
     //3. boundknob  안쪽에 파란 사각형 그리기, 더 작은 사이즈
     //전체 길이의 15% (0.15)만큼 줄인다. 상대적
     const juce::Rectangle<float> boundKnob = boundSquare.reduced(boundSquare.getWidth()*0.15f);
-    g.setColour(juce::Colours::blue);
-    g.drawRect(boundKnob);
+    //g.setColour(juce::Colours::blue);
+    //g.drawRect(boundKnob);
     
     //4. boundknob 사이즈에 맞춰 원 그리기
     //4-1 dropShadow 그림자 그리기
@@ -147,7 +148,11 @@ void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     path.addCentredArc(boundSquare.getCentreX(), boundSquare.getCentreY(),
                        radiusTrack, radiusTrack, 0.0f, // 0.0f -> 몇도씩 회전시킬건지.
                        rotaryStartAngle, rotaryEndAngle, true); // 시작-끝 앵글 (FoxRotaryKnob.cpp 의 생성자에 degree 정의해놨음, true: 새로 그린다, false: 붓을 안떼고 이어서 그리는 모드
-    //선의 성격 정하기. curved : 선이 꺾일때 뭉둥하게 꺾일지 아니면 각지게 그릴지, rounded : 선 양끝을 어떻게 그릴까(EndCapStyle) - 둥그렇게 그리기.
+
+    //선 stroke 의 타입을 정의
+    //thicknessTrack - 선 굵기
+    //curved - 곡선
+    //rounded : 선 양끝을 어떻게 그릴까(EndCapStyle) - 둥그렇게 그리기. 선이 꺾일때 뭉둥하게 꺾일지 아니면 각지게 그릴지
     const juce::PathStrokeType strokeType(thicknessTrack,
                                           juce::PathStrokeType::curved,
                                           juce::PathStrokeType::rounded);
@@ -159,7 +164,7 @@ void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     //시작 각도 - 끝 각도를 아니까 이 사이의 비율을 통해 x,y 를 구하기S$
     
     //7. 다이얼
-    //juce 기준 현재값의 각도
+    //juce 기준 현재값의 각도 - 눈금의 각도
     const float angleSliderPos = rotaryStartAngle + sliderPosProportional * ( rotaryEndAngle - rotaryStartAngle);
     
     //수학 기준 현재값의 각도
@@ -188,4 +193,16 @@ void FoxLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     g.setColour(FoxColors::RotaryKnob::dial);
     g.strokePath(path, strokeType);
     
+    //8. track value - 현재 위치까지 채워지는 홀 그리기
+    //분홍색 선을 가운데서부터 시작할건지 말건지 (gain)
+    const bool inDrawFromMiddle = inSlider.getProperties()["drawFromMiddle"];
+    //중간부터 시작해야 한다면 true, 시작 각도 중간으로 계산, 아니면 rotaryStartAngle
+    const float angleStart = inDrawFromMiddle ? rotaryStartAngle + (rotaryEndAngle - rotaryStartAngle) * 0.5f : rotaryStartAngle;
+    path.clear();
+    path.addCentredArc(boundSquare.getCentreX(), boundSquare.getCentreY(),
+                       radiusTrack, radiusTrack, 0.0f, // 0.0f -> 몇도씩 회전시킬건지.
+                       angleStart, angleSliderPos, true);
+    g.setColour(FoxColors::RotaryKnob::trackActive);
+    g.strokePath(path, strokeType); // stroke 타입 정의 (굵기)
+
 }

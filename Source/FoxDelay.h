@@ -20,6 +20,8 @@ class FoxDelay
     
     void prepare(const double inSampleRate) noexcept;
     void reset() noexcept;
+    
+    void preProcess(const float inDelay) noexcept; 
     float process(const float inSample, const float inDelay) noexcept;
     
     private:
@@ -39,6 +41,13 @@ class FoxDelay
     
     //4개 점 기준 허미트 인터폴레이션 더 부드러운 인터폴레이션
     float getSampleByHermite(const float inIndexReading) const noexcept;
+    
+    //cross fading
+    float mDelayCurrentCf;
+    float mFadeInCf;
+    float mIncrementCf;
+    float popSampleCrossFading(const float inDelayTarget) noexcept;
+    
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FoxDelay)

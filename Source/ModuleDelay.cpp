@@ -30,6 +30,12 @@ void ModuleDelay::reset() noexcept
     mDelayL.reset();
     mDelayR.reset();
 }
+
+void ModuleDelay::preProcess(const float inDelayL, const float inDelayR) noexcept
+{
+    mDelayL.preProcess(inDelayL);
+    mDelayR.preProcess(inDelayR);
+}
 void ModuleDelay::process(const float inSampleL, const float inSampleR,
              float& outSampleL, float& outSampleR,
              const float inDelayL, const float inDelayR) noexcept

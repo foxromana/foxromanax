@@ -23,6 +23,8 @@ class ModuleDelay
                      float& outSampleL, float& outSampleR,
                      const float inDelayL, const float inDelayR) noexcept;
         
+        void preProcess(const float inDelayL, const float inDelayR) noexcept;
+    
     private:
         FoxDelay mDelayL, mDelayR;
     

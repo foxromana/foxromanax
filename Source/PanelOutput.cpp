@@ -17,7 +17,7 @@ PanelOutput::PanelOutput(const juce::String& inTitle, FoxRomanaXAudioProcessor& 
 PanelBase(inTitle, inAudioProcessor),
 //mAudioProcessor 는 부모 클래스의 protected 맴버
 mKnobMix(mAudioProcessor.getApvts(), FoxParamIDs::Output::Mix.getParamID()),
-mKnobGain(mAudioProcessor.getApvts(), FoxParamIDs::Output::Gain.getParamID())
+mKnobGain(mAudioProcessor.getApvts(), FoxParamIDs::Output::Gain.getParamID(), true) //inDrawFromMiddle=true 분홍선 그리는 기준이 다름
 {
     mLabelMix.setText("Mix", juce::NotificationType::dontSendNotification);
     mLabelMix.setJustificationType(juce::Justification::centred);

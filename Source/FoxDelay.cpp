@@ -31,12 +31,27 @@ void FoxDelay::prepare(const double inSampleRate) noexcept
     mSizeBuffer = (int)(inSampleRate * maxDelayTimeSec) + 1; // 44000 * 2 second = 88001 size!
     mBuffer.resize(mSizeBuffer); // update mBuffer size into 88001
     
+    //웅웅 소리 처리
+    //crossfading
+    //duration 정해주기 50ms 정도로!
+    const double durationCf = 0.05; //50 ms
+    //플러그인에서는 시간개념이 없으므로 50ms 가 sample rate 으로 얼마인지를 변환하기
+    const float numSamplesCf = (float)(durationCf * inSampleRate);
+    //fade in 을 할때 0 에서 1 까지 올라가야하는데,
+    //어떤 숫자를 몇번 더해줘야 할지를 increment 를 몇 씩 해야하는지 단계 소를 구하기/ duration 동안 단계를 얼마나 쪼개야하나 구하기
+    mIncrementCf = (1.0f /numSamplesCf);
+    
+    
     reset(); // all 0 in mBuffer
 }
 
 void FoxDelay::reset()noexcept
 {
     mBuffer.fill(0.0f); //memset all init to 0
+    
+    //crossfading 에 사용할 애들 초기화
+    mDelayCurrentCf = 0.0f;
+    mFadeInCf = 0.0f;
 }
 
 //sampleRate 44.1kHz = 44100 (1초당 44100개 샘플링)
@@ -70,7 +85,9 @@ float FoxDelay::process(const float inSample, const float inDelay) noexcept
     //    indexReading += mSizeBuffer;
     //}
     
-    const float sampleDelayed = popSample(inDelay);
+    //read. pop
+    //const float sampleDelayed = popSample(inDelay);
+    const float sampleDelayed = popSampleCrossFading(inDelay);
     
     //update
     //다음에 process 호출될때 다음 인덱스로
@@ -167,4 +184,60 @@ float FoxDelay::getSampleByHermite(const float inIndexReading) const noexcept
     const float stage1 = (a * fraction) - b;
     const float stage2 = (stage1 * fraction) + slope0;
     return ((stage2 * fraction) + mBuffer[iB]);
+}
+
+//mDelayCurrentCf 내가 기억하고 있는 딜레이 타임
+//inDelay 새로 들어온 딜레이 타임
+void FoxDelay::preProcess(const float inDelay) noexcept
+{
+    //crossfading 을 할건지 말건지 정하기
+    //파라미터값이 안뀌었으면 crossfadeing 을 할 필요가 없음
+    
+    //crossfading을 하고 있는지 아닌지 먼저 확인
+    //mFadeInCf =볼륨 비율
+    if( mFadeInCf == 0.00f ) // new 위치가 0 이다 ( 볼륨 비율이 0 이다). new 위치가 만약 0 이상이면 fading 시작해야겠구나
+    {
+        if(mDelayCurrentCf == 0.0f) //현재 current 값이 0 이면. 첫 1회 재생할 때.
+        {
+            //원래 하던게 없으니 새로 들어온 딜레이를 현재의 딜레이 타임으로 갈아 끼우기
+            mDelayCurrentCf= inDelay;
+        }
+        else if(mDelayCurrentCf != inDelay) //새로운게 들어왔을 때. fade in 시작해라
+        {
+            mFadeInCf = mIncrementCf; //increment로 세팅 - 한단계 추가! 0.N
+        }
+    }
+}
+
+float FoxDelay::popSampleCrossFading(const float inDelayTarget) noexcept
+{
+    //현대 딜레이 타임 = mDelayCurrentCf fade out 되어야 함 점점 증감
+    //새로운 딜레이 타임 = inDelayTarget fade in 되어야 함 점점 증가
+    
+    //현재 딜레이 타임값에 해당하는 샘플 값
+    float sampleDelayedCurrent = popSample(mDelayCurrentCf);
+    
+    //크로스페이드가 적용된 최종결과 샘플 값 초기화
+    float sampleCrossfaded = sampleDelayedCurrent;
+    
+    //mIncrementCf 로 세팅되어 있으면 mFadeInCf 가 무조건 0 이상 이므로 아래 if 구문 안으로 들어감
+    if (mFadeInCf > 0.0f) //크로스페이딩 시작 했는가?
+    {
+        //새로 들어온 애에 해당하는 샘플 값
+        const float sampleDelayedTarget = popSample(inDelayTarget);
+       
+        const float fadeOut = 1.0f - mFadeInCf;
+        //크로스페이드가 적용된 최종결과 샘플 값 업데이트 ,weight 적용 
+        sampleCrossfaded = ( sampleDelayedCurrent * fadeOut ) + (sampleDelayedTarget * mFadeInCf);
+        
+        mFadeInCf += mIncrementCf;
+        if(mFadeInCf > 1.0f) // 새로운 놈이 1 까지 올라갓다 = 100% 까지왔다
+        {
+            // 원래 딜레이 (current) 는 이제 0%가 되었따. 다음 딜레이가 시작하기 전까지는 이제 new 가 현재 delay target 이 된다.
+            mDelayCurrentCf = inDelayTarget;
+            mFadeInCf = 0.0f;  // 크로스페이딩을 이제 하지 않는 모드로 변경.
+        }
+    }
+    
+    return sampleCrossfaded;
 }
