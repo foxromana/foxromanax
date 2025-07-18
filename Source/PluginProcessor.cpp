@@ -112,7 +112,9 @@ void FoxRomanaXAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     //mFeedbackR.prepare();
     
     //lesson 9-2 feedback module을 쓴 경우
-    mModuleFeedback.prepare();
+    //filter 적용 - 버퍼 하나에 무슨 정보가 들어오는지 3가지 정보 넣어줘 - sample rate, butter size, channel number
+    juce::dsp::ProcessSpec spec = {sampleRate, (juce::uint32)samplesPerBlock, 2};
+    mModuleFeedback.prepare(spec);
 }
 
 void FoxRomanaXAudioProcessor::releaseResources()
@@ -273,7 +275,10 @@ void FoxRomanaXAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //mFeedbackR.pushSample(wetR, mParameters.getValueAmount());
         
         //lesson 9-2 feedback module을 쓴 경우
-        mModuleFeedback.ProcessPush(wetL, wetR, mParameters.getValueAmount());
+        mModuleFeedback.ProcessPush(wetL, wetR,
+                                    mParameters.getValueAmount(),
+                                    mParameters.getValueLowCut(),
+                                    mParameters.getValueHighCut());
     }
     
     //최종 validation 단계

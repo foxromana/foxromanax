@@ -61,6 +61,21 @@ static juce::String stringFromPercent(float inValue, int)
     return juce::String((int)inValue) + " %"; // 10 -> 10%
 }
 
+static juce::String stringFromHz(float inValue, int)
+{
+    return juce::String(inValue,0) + "Hz";
+}
+
+static float hzFromString(const juce::String& inText)
+{
+    const float value = inText.getFloatValue();
+    
+    if(value < 20.0)
+    {
+        return value * 1000.0f;
+    }
+    return value;
+}
 
 //template function for make dynamic casting easier!!
 template<typename T>
@@ -109,7 +124,10 @@ mFlagLinking(false)
     
     //리스너 등록
     mApvts.addParameterListener(FoxParamIDs::Control::Link.getParamID(), this);
-    
+
+    //Filter
+    castParameter(mApvts, FoxParamIDs::Feedback::LowCut, mParamLowCut);
+    castParameter(mApvts, FoxParamIDs::Feedback::HighCut, mParamHighCut);
 }
 
 FoxParameters::~FoxParameters()
@@ -195,7 +213,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout FoxParameters::initParameter
     //Control - 초기값이 false
     layout.add(std::make_unique<juce::AudioParameterBool>(FoxParamIDs::Control::Tempo,"Tempo",false));
     layout.add(std::make_unique<juce::AudioParameterBool>(FoxParamIDs::Control::Link,"Stereo Link",false));
-        
+    
+    
+    //filter lowcut
+    layout.add(std::make_unique<juce::AudioParameterFloat>(FoxParamIDs::Feedback::LowCut,
+                                                           "LowCut",
+                                                           juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f, 0.3f), // cutoff parameter 범위 ( 주파수 대역 20~ 20000 hz 범위 내에서 어디를 깎을지. 마지막 파라미터 0.3f = 낮은 부분은 세밀하게 움직이게 하기
+                                                           20.0f,
+                                                           juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromHz).withValueFromStringFunction(hzFromString)));
+    
+    //filter highcut
+    layout.add(std::make_unique<juce::AudioParameterFloat>(FoxParamIDs::Feedback::HighCut,
+                                                           "HighCut",
+                                                           juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f, 0.3f), // cutoff parameter 범위 ( 주파수 대역 20~ 20000 hz 범위 내에서 어디를 깎을지
+                                                           20000.0f,
+                                                           juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromHz).withValueFromStringFunction(hzFromString)));
+    
     // juce::audioparameter ( RangedAudioParamter is parent. it's always range from 0 to 1 )
     // - int : ..?
     // - bool : mute button (toggle)
@@ -228,6 +261,9 @@ void FoxParameters::prepare(const double inSampleRate) noexcept
     //Lesson 8 Feedback
     mValueAmount.reset(mSampleRate, timeLinearSmoothing);
     
+    //Filter
+    mValueLowCut.reset(mSampleRate, timeLinearSmoothing);
+    mValueHighCut.reset(mSampleRate, timeLinearSmoothing);
     
     //prepare() is called in the begining so needed to init target and current value
     update(); // target value initialized
@@ -251,6 +287,10 @@ void FoxParameters::smoothen() noexcept
     
     //Lesson 8
     mValueAmount.getNextValue();
+    
+    //filter
+    mValueLowCut.getNextValue();
+    mValueHighCut.getNextValue();
     
 }
 
@@ -305,6 +345,9 @@ void FoxParameters::update(const double inBpm) noexcept
     const float amount = mParamAmount->get() * 0.01f;// 단위 변경: 0~100% -> 0.00 ~ 1.00
     mValueAmount.setTargetValue(amount);
     
+    //Filter
+    mValueLowCut.setTargetValue(mParamLowCut->get());
+    mValueHighCut.setTargetValue(mParamHighCut->get());
 }
 
 //from target, set the current value. no smoothing needed
@@ -330,6 +373,10 @@ void FoxParameters::reset() noexcept
     
     //Lesson 8 Feedback
     mValueAmount.setCurrentAndTargetValue(mValueAmount.getTargetValue());
+    
+    //Filter
+    mValueLowCut.setCurrentAndTargetValue(mValueLowCut.getTargetValue());
+    mValueHighCut.setCurrentAndTargetValue(mValueHighCut.getTargetValue());
 }
 
 
@@ -369,6 +416,17 @@ float FoxParameters::getValueAmount() const noexcept
 {
     return mValueAmount.getCurrentValue();
 }
+
+float FoxParameters::getValueLowCut() const noexcept
+{
+    return mValueLowCut.getCurrentValue(); 
+}
+
+float FoxParameters::getValueHighCut() const noexcept
+{
+    return mValueHighCut.getCurrentValue();
+}
+
 
 void FoxParameters::setParamsByFactoryPreset(const FactoryPreset& inPreset) noexcept
 {

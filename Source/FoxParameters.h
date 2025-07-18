@@ -51,7 +51,10 @@ namespace FoxParamIDs
     namespace Feedback
     {
         const juce::ParameterID Amount("Amount", 1);
+        const juce::ParameterID LowCut("LowCut", 1);
+        const juce::ParameterID HighCut("HighCut", 1);
     }
+
 }
 
 //리스너 상속 : stereo link 체크박스 클릭시 엑션 위해
@@ -92,6 +95,10 @@ class FoxParameters : private juce::AudioProcessorValueTreeState::Listener,
         //class 12
         juce::ValueTree getStateCopied() const noexcept;
         bool setParamsByValueTree(const juce::ValueTree& inState) noexcept;
+    
+        //filter
+        float getValueLowCut() const noexcept;
+        float getValueHighCut() const noexcept;
     private:
         juce::AudioProcessorValueTreeState& mApvts;
         
@@ -143,7 +150,13 @@ class FoxParameters : private juce::AudioProcessorValueTreeState::Listener,
         //std::atomic처리 -> 누군가 write 할때 쓰지 않도록 경고 처리해주는 기능
         std::atomic<int> mChannelMaster;  //링크 기능 사용 시 마스터 (기준) 체널. 변화를 준 놈.( 나머지는 slave) 디폴트는 L
         std::atomic<bool> mFlagLinking; // 슬레이브 마스터 링크 중인지 아닌지 판별하는 플래그. 파라미터체인지 함수 안에서 강제로 파라미터 바꾸는 경우는 false 로 되어야 함
-    void timerCallback() override;
+        void timerCallback() override;
+    
+        //Filter
+        juce::AudioParameterFloat* mParamLowCut;
+        juce::LinearSmoothedValue<float> mValueLowCut;
+        juce::AudioParameterFloat* mParamHighCut;
+        juce::LinearSmoothedValue<float> mValueHighCut;
     
     //safety
     //if there is no user's constructor, system create temporary copied constructor inside.

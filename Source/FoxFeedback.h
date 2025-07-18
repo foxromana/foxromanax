@@ -26,7 +26,8 @@ class FoxFeedback
     
     //inAmount -> 0~100% 볼륨 얼마나 작아질지
     void pushSample(const float inSample, const float inAmount = 1.0f) noexcept;
-    float popSample() const noexcept; 
+    float popSample() const noexcept;
+    
     private:
         //push 된 wet
         float mSampleFeedback;

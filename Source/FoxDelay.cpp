@@ -42,6 +42,14 @@ void FoxDelay::prepare(const double inSampleRate) noexcept
     mIncrementCf = (1.0f /numSamplesCf);
     
     
+    //Ducking
+    const double timeToTarget = 0.05; // 50ms
+    const float numSamplesToTarget = (float)(timeToTarget * inSampleRate);
+    mCoefficientDk = 1.0f - std::exp(-1.0f / numSamplesToTarget);
+    const double timeWait = 0.3; //300 ms :정해진 wait 시간. 변화가 발생한 시점부터 카운트 들어가서 300ms 가 지나야 타겟 딜레이가 적용 시작됨
+    const float numSamplesWait = (float)(timeWait * inSampleRate);
+    mWaitIncrementDk = 1.0f / numSamplesWait;
+    
     reset(); // all 0 in mBuffer
 }
 
@@ -52,6 +60,13 @@ void FoxDelay::reset()noexcept
     //crossfading 에 사용할 애들 초기화
     mDelayCurrentCf = 0.0f;
     mFadeInCf = 0.0f;
+    
+    //Ducking
+    mDelayCurrentDk = 0.0f;
+    mDelayTargetDk = 0.f;
+    mFadeCurrentDk = 1.0f;
+    mFadeTargetDk = 1.0;
+    mWaitDk = 0.0f;
 }
 
 //sampleRate 44.1kHz = 44100 (1초당 44100개 샘플링)
@@ -87,7 +102,14 @@ float FoxDelay::process(const float inSample, const float inDelay) noexcept
     
     //read. pop
     //const float sampleDelayed = popSample(inDelay);
-    const float sampleDelayed = popSampleCrossFading(inDelay);
+    
+    //Cross fading 방법 -------------------------------------------
+    //const float sampleDelayed = popSampleCrossFading(inDelay);
+    //-------------------------------------------
+    
+    //Ducking 방법-------------------------------------------
+    const float sampleDelayed = popSampleDucking();
+    //-------------------------------------------
     
     //update
     //다음에 process 호출될때 다음 인덱스로
@@ -190,6 +212,8 @@ float FoxDelay::getSampleByHermite(const float inIndexReading) const noexcept
 //inDelay 새로 들어온 딜레이 타임
 void FoxDelay::preProcess(const float inDelay) noexcept
 {
+    
+    // Crossfading 방법 -------------------------------------------------------
     //crossfading 을 할건지 말건지 정하기
     //파라미터값이 안뀌었으면 crossfadeing 을 할 필요가 없음
     
@@ -207,6 +231,33 @@ void FoxDelay::preProcess(const float inDelay) noexcept
             mFadeInCf = mIncrementCf; //increment로 세팅 - 한단계 추가! 0.N
         }
     }
+    
+    //-----------------------------------------------------------------------
+    
+    // Ducking 방법 ----------------------------------------------------------
+    if(mDelayTargetDk != inDelay)
+    {
+        //target 바뀜
+        mDelayTargetDk = inDelay;
+        //더킹 시작. 볼륨을 내려
+        //but 제일 처음 플레이할때는 당장 플레이 해야하므로 그것도 고려하기
+        if(mDelayCurrentDk ==0.0f)//가장 처음 재생되는 상황인가?
+        {
+            //이때는 더킹이고 나발이고 상관없이
+            //바로 타겟 값을 사용
+            mDelayCurrentDk = mDelayTargetDk;
+        }
+        else
+        {
+            //현재 값이 있는 상황에서 딜레이가 노브가 바뀐 ( 새 딜레이 값이 들어온) 경우
+            //딜레이 적용 카운트 시작. 점점점 커브형태로~~
+            mFadeTargetDk = 0.0f;
+            mWaitDk = mWaitIncrementDk;
+            
+        }
+        
+    }
+    //-----------------------------------------------------------------------
 }
 
 float FoxDelay::popSampleCrossFading(const float inDelayTarget) noexcept
@@ -241,3 +292,26 @@ float FoxDelay::popSampleCrossFading(const float inDelayTarget) noexcept
     
     return sampleCrossfaded;
 }
+
+float FoxDelay::popSampleDucking() noexcept
+{
+    mFadeCurrentDk += (mFadeTargetDk - mFadeCurrentDk)*mCoefficientDk;
+    
+    const float sampleDelayed = popSample(mDelayCurrentDk) * mFadeCurrentDk;
+    
+    if(mWaitDk > 0.0f)
+    {
+        //하나씩 하나씩 값 더하기. 1에 도달하기까지
+        mWaitDk += mWaitIncrementDk;
+        
+        if(mWaitDk >= 1.0f)//타겟까지 도달한 경우
+        {
+            mDelayCurrentDk = mDelayTargetDk;
+            mFadeTargetDk = 1.0f;
+            mWaitDk = 0.0f;
+        }
+    }
+    
+    return sampleDelayed;
+}
+
